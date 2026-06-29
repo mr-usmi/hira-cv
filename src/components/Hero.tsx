@@ -223,9 +223,21 @@ export const Hero: React.FC = () => {
 
         .profile-frame-container {
           position: relative;
-          width: 280px;
-          height: 280px;
+          width: 230px;
+          height: 230px;
           margin: 1.5rem 0;
+        }
+
+        @media (max-width: 576px) {
+          .ring-2 {
+            display: none !important;
+          }
+          .ring-1 {
+            top: -6px !important;
+            left: -6px !important;
+            right: -6px !important;
+            bottom: -6px !important;
+          }
         }
 
         @media (min-width: 576px) {

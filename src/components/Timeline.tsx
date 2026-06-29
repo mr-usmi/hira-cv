@@ -131,10 +131,15 @@ export const Timeline: React.FC = () => {
           background: linear-gradient(
             to bottom,
             var(--accent-pink) 0%,
-            var(--accent-teal) 50%,
-            var(--accent-gold) 100%
+            var(--accent-peach) 100%
           );
           border-radius: 9999px;
+        }
+
+        @media (max-width: 576px) {
+          .timeline-line {
+            left: 0.75rem;
+          }
         }
 
         @media (min-width: 992px) {
@@ -155,6 +160,12 @@ export const Timeline: React.FC = () => {
           display: flex;
           flex-direction: column;
           padding-left: 3.5rem;
+        }
+
+        @media (max-width: 576px) {
+          .timeline-item {
+            padding-left: 2rem;
+          }
         }
 
         @media (min-width: 992px) {
@@ -190,6 +201,19 @@ export const Timeline: React.FC = () => {
           color: #ffffff;
           z-index: 10;
           border: 3px solid var(--bg-secondary);
+        }
+
+        @media (max-width: 576px) {
+          .timeline-icon-node {
+            left: 0rem;
+            width: 28px;
+            height: 28px;
+            border-width: 2px;
+          }
+          .timeline-icon-node svg {
+            width: 14px;
+            height: 14px;
+          }
         }
 
         @media (min-width: 992px) {

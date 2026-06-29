@@ -271,13 +271,13 @@ export const Contact: React.FC = () => {
         }
 
         .phone-btn-gradient {
-          background: linear-gradient(135deg, var(--accent-teal) 0%, var(--accent-peach) 100%);
-          box-shadow: 0 4px 15px rgba(13, 148, 136, 0.2);
+          background: var(--accent-gradient);
+          box-shadow: 0 4px 15px rgba(236, 72, 153, 0.2);
         }
 
         .phone-btn-gradient:hover {
-          background: linear-gradient(135deg, var(--accent-peach) 0%, var(--accent-teal) 100%);
-          box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4);
+          background: var(--accent-gradient-hover);
+          box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
         }
 
         .text-success-icon {
