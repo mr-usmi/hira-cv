@@ -154,7 +154,7 @@ export const translations: Record<Language, Translations> = {
     
     heroGreeting: '¡Hola! Soy Hira Khan Aslam ✿',
     heroSubtitle: 'Óptica - Optometrista',
-    heroDescription: 'Apasionada por la salud de tus ojitos, con más de 4 años de experiencia en refracción, lentes de contacto y montaje de gafas. Inteligente, alegre y amante de las flores y las gafas bonitas. ¡Bienvenido a mi rincón cuqui!',
+    heroDescription: 'Apasionada por la salud visual, con más de 4 años de experiencia en refracción, lentes de contacto y montaje de gafas. Inteligente, alegre y amante de las flores y las monturas bonitas. ¡Te doy la bienvenida a mi espacio profesional!',
     heroContactBtn: '¡Hablemos!',
     heroCVBtn: 'Descargar CV',
     
@@ -162,9 +162,9 @@ export const translations: Record<Language, Translations> = {
     aboutSubtitle: 'Salud visual con mucha empatía, sonrisas y flores',
     aboutText1: '¡Hola! Soy una óptica-optometrista con 4 años de experiencia. Me fascina ayudar a que las personas vean el mundo con total claridad. Para mí, la óptica es escuchar con dulzura, comprender qué necesita tu mirada y aconsejarte con cariño y alegría.',
     aboutText2: 'Me gradué en la Universitat Politècnica de Catalunya (UPC) y me he especializado tanto en el gabinete clínico como en el taller de montaje de gafas, cuidando cada detalle.',
-    aboutText3: 'Creo que una mirada feliz alegra el corazón y que un trato humano, empático y súper adorable marca la diferencia.',
+    aboutText3: 'Creo que una mirada feliz alegra el corazón y que un trato humano, empático y cercano marca la diferencia.',
     aboutHighlightOptics: 'Salud Visual',
-    aboutHighlightCare: 'Atención Cuqui',
+    aboutHighlightCare: 'Atención Cálida',
     
     skillsTitle: 'Especialidades y Habilidades',
     skillsSubtitle: 'Un toque de ciencia visual, precisión técnica y mucho cariño por los detalles.',
@@ -173,7 +173,7 @@ export const translations: Record<Language, Translations> = {
     skillsWorkshop: 'Montaje y Taller',
     skillsInstruments: 'Instrumentación Clínica',
     skillsLanguages: 'Idiomas',
-    skillsSoft: 'Cualidades Adorables',
+    skillsSoft: 'Cualidades Personales',
     
     expTitle: 'Experiencia Profesional',
     expSubtitle: 'Mi dulce camino en gabinetes universitarios, talleres de óptica y atención clínica.',
@@ -233,7 +233,7 @@ export const translations: Record<Language, Translations> = {
     langBilingue: 'Bilingüe',
     langAvanzado: 'Avanzado',
     
-    footerDesc: 'Salud visual y optometría especializada. Cuidando tus ojitos con el mejor asesoramiento, profesionalidad y un trato súper cercano y alegre.',
+    footerDesc: 'Salud visual y optometría especializada. Cuidando de tu salud visual con el mejor asesoramiento, profesionalidad y un trato cercano y alegre.',
     footerSections: 'Secciones',
     footerCVDesc: '¿Quieres descargar mi curriculum en formato PDF?',
     
@@ -316,7 +316,7 @@ export const translations: Record<Language, Translations> = {
     
     heroGreeting: 'Hi! I\'m Hira Khan Aslam ✿',
     heroSubtitle: 'Optician - Optometrist',
-    heroDescription: 'Passionate about your eye health, with over 4 years of experience in refraction, contact lenses, and lens mounting. Smart, cheerful, and in love with flowers and pretty glasses. Welcome to my cute corner!',
+    heroDescription: 'Passionate about visual health, with over 4 years of experience in refraction, contact lenses, and lens mounting. Smart, cheerful, and in love with flowers and beautiful eyewear. Welcome to my professional space!',
     heroContactBtn: 'Let\'s Talk!',
     heroCVBtn: 'Download CV',
     
@@ -324,9 +324,9 @@ export const translations: Record<Language, Translations> = {
     aboutSubtitle: 'Visual health with empathy, smiles, and flowers',
     aboutText1: 'Hi there! I am an optician-optometrist with 4 years of experience. I love helping people see the world with total clarity. For me, optics is about listening gently, understanding what your eyes need, and advising you with care and joy.',
     aboutText2: 'I graduated from the Polytechnic University of Catalonia (UPC) and specialized in both the clinical office and the lens mounting workshop, taking care of every little detail.',
-    aboutText3: 'I believe a happy look brings joy to the heart, and that a human, empathetic, and super adorable touch makes all the difference.',
+    aboutText3: 'I believe a happy look brings joy to the heart, and that a human, empathetic, and warm touch makes all the difference.',
     aboutHighlightOptics: 'Visual Health',
-    aboutHighlightCare: 'Cute Care',
+    aboutHighlightCare: 'Warm Care',
     
     skillsTitle: 'Specialties & Skills',
     skillsSubtitle: 'A touch of visual science, technical precision, and a lot of love for details.',
@@ -335,7 +335,7 @@ export const translations: Record<Language, Translations> = {
     skillsWorkshop: 'Assembly & Workshop',
     skillsInstruments: 'Clinical Instruments',
     skillsLanguages: 'Languages',
-    skillsSoft: 'Adorable Qualities',
+    skillsSoft: 'Personal Qualities',
     
     expTitle: 'Professional Experience',
     expSubtitle: 'My sweet journey in university clinics, optical workshops, and clinical care.',
