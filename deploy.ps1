@@ -13,7 +13,7 @@ $REMOTE_SSH    = "$REMOTE_USER@$REMOTE_HOST"
 $REMOTE_DIR    = "/opt/hira-cv"
 $CONTAINER     = "hira-cv"
 $IMAGE         = "hira-cv:latest"
-$PORT          = 8090
+$PORT          = 8091
 $PROJECT_DIR   = $PSScriptRoot
 
 # ---- Refresh PATH ----
