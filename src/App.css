@@ -1,0 +1,6 @@
+/* Minimal App.css to avoid conflicts with global design system in index.css */
+.app-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
