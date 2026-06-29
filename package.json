@@ -11,12 +11,10 @@
   },
   "dependencies": {
     "@formkit/auto-animate": "^0.9.0",
-    "@types/three": "^0.185.0",
     "lucide-react": "^1.22.0",
     "pdfjs-dist": "^6.1.200",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "three": "^0.185.0"
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@types/node": "^24.13.2",

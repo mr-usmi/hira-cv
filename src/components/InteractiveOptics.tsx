@@ -1,428 +1,150 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Eye, Sparkles, AlertCircle, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
-import * as THREE from 'three';
+import { Sparkles, Heart } from 'lucide-react';
 
 export const InteractiveOptics: React.FC = () => {
   const { t } = useLanguage();
-  const [sph, setSph] = useState<number>(0);
-  const [cyl, setCyl] = useState<number>(0);
-  const [isCorrected, setIsCorrected] = useState<boolean>(true);
-  
-  // 3D Scene Refs
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  
-  // Mesh Refs
-  const lensGeometryRef = useRef<THREE.CylinderGeometry | null>(null);
-  const lensMeshRef = useRef<THREE.Mesh | null>(null);
-  const originalPositionsRef = useRef<Float32Array | null>(null);
-  const raysGroupRef = useRef<THREE.Group | null>(null);
-  const eyeballGroupRef = useRef<THREE.Group | null>(null);
-  
-  // Rotation / Drag Interaction State via Ref to prevent stale closures in requestAnimationFrame
-  const rotationRef = useRef({ x: 0.2, y: -0.6 });
-  const isDragging = useRef(false);
-  const previousMousePosition = useRef({ x: 0, y: 0 });
+  const [sph, setSph] = useState<number>(-2.00);
+  const [cyl, setCyl] = useState<number>(-0.50);
 
-  // Handle Dragging / Rotation
-  const handleMouseDown = (e: React.MouseEvent) => {
-    isDragging.current = true;
-    previousMousePosition.current = { x: e.clientX, y: e.clientY };
+  // Generate range values for dropdowns (-6.00 to +6.00 for SPH, -4.00 to 0.00 for CYL in 0.25 steps)
+  const generateRange = (min: number, max: number, step: number) => {
+    const list = [];
+    for (let val = min; val <= max; val += step) {
+      list.push(val);
+    }
+    return list;
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current) return;
-    const deltaX = e.clientX - previousMousePosition.current.x;
-    const deltaY = e.clientY - previousMousePosition.current.y;
-    
-    rotationRef.current.x += deltaY * 0.01;
-    rotationRef.current.y += deltaX * 0.01;
-    
-    previousMousePosition.current = { x: e.clientX, y: e.clientY };
-  };
+  const sphRange = generateRange(-6.00, 6.00, 0.25);
+  const cylRange = generateRange(-4.00, 0.00, 0.25);
 
-  const handleMouseUp = () => {
-    isDragging.current = false;
-  };
-
-  // Touch Support
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      isDragging.current = true;
-      previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging.current || e.touches.length !== 1) return;
-    const deltaX = e.touches[0].clientX - previousMousePosition.current.x;
-    const deltaY = e.touches[0].clientY - previousMousePosition.current.y;
-    
-    rotationRef.current.x += deltaY * 0.015;
-    rotationRef.current.y += deltaX * 0.015;
-    
-    previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  };
-
-  // Preset Views
-  const setView = (view: 'profile' | 'front' | 'angled') => {
-    if (view === 'profile') {
-      rotationRef.current = { x: 0, y: Math.PI / 2 };
-    } else if (view === 'front') {
-      rotationRef.current = { x: 0, y: 0 };
-    } else {
-      rotationRef.current = { x: 0.2, y: -0.6 };
-    }
-  };
-
-  // Initialize Three.js Scene
-  useEffect(() => {
-    if (!canvasRef.current) return;
-
-    // 1. Scene setup
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xfffbf7); // Matches var(--bg-primary) sunny cream
-    sceneRef.current = scene;
-
-    // 2. Camera setup
-    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-    camera.position.set(0, 0, 8.5);
-    cameraRef.current = camera;
-
-    // 3. Renderer setup
-    const renderer = new THREE.WebGLRenderer({
-      canvas: canvasRef.current,
-      antialias: true,
-      alpha: true
-    });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    rendererRef.current = renderer;
-
-    // 4. Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
-    scene.add(ambientLight);
-
-    const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.9);
-    dirLight1.position.set(6, 6, 6);
-    scene.add(dirLight1);
-
-    const dirLight2 = new THREE.DirectionalLight(0xfcb1c4, 0.45); // Cute warm pink light
-    dirLight2.position.set(-6, -6, -3);
-    scene.add(dirLight2);
-
-    // 5. Geometry & Lens Mesh creation
-    const geometry = new THREE.CylinderGeometry(1.6, 1.6, 0.4, 64, 8);
-    geometry.rotateX(Math.PI / 2);
-    lensGeometryRef.current = geometry;
-
-    // Cache original vertex positions for deformation calculations
-    const positionAttr = geometry.getAttribute('position');
-    originalPositionsRef.current = positionAttr.array.slice() as Float32Array;
-
-    // Material with high-end glass physics
-    const lensMaterial = new THREE.MeshPhysicalMaterial({
-      color: 0xe0f2fe, // Soft blue-teal glass tint
-      transmission: 0.95,
-      opacity: 1,
-      transparent: true,
-      roughness: 0.02,
-      metalness: 0.05,
-      ior: 1.52, // Glass Refractive Index
-      thickness: 1.5,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.05,
-      side: THREE.DoubleSide
-    });
-
-    const lensMesh = new THREE.Mesh(geometry, lensMaterial);
-    scene.add(lensMesh);
-    lensMeshRef.current = lensMesh;
-
-    // 6. ADD OPTOMETRIST TRIAL FRAME (Montura de Prueba) around the Lens
-    // Rims of the lens (Cute Pink Torus)
-    const rimGeo = new THREE.TorusGeometry(1.65, 0.1, 16, 64);
-    const rimMat = new THREE.MeshStandardMaterial({ 
-      color: 0xec4899, // Bright pink plastic
-      roughness: 0.2, 
-      metalness: 0.1 
-    });
-    const rimMesh = new THREE.Mesh(rimGeo, rimMat);
-    rimMesh.rotation.x = Math.PI / 2; // Align to Z axis
-    lensMesh.add(rimMesh);
-
-    // Trial lens handle/tab (Optometrists use this to rotate axis)
-    const tabGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.6, 16);
-    const tabMat = new THREE.MeshStandardMaterial({ color: 0xfb923c, roughness: 0.3 }); // Peach colored tab
-    const tabMesh = new THREE.Mesh(tabGeo, tabMat);
-    tabMesh.position.set(0, 1.8, 0); // Position at the top of the lens
-    lensMesh.add(tabMesh);
-
-    // 7. ADD GLOSSY 3D EYEBALL (Globo Ocular) at Z = 3
-    const eyeballGroup = new THREE.Group();
-    eyeballGroup.position.set(0, 0, 3);
-    scene.add(eyeballGroup);
-    eyeballGroupRef.current = eyeballGroup;
-
-    // Sclera (White Sphere)
-    const scleraGeo = new THREE.SphereGeometry(1.0, 32, 32);
-    const scleraMat = new THREE.MeshStandardMaterial({ 
-      color: 0xffffff, 
-      roughness: 0.1,
-      metalness: 0.05
-    });
-    const scleraMesh = new THREE.Mesh(scleraGeo, scleraMat);
-    eyeballGroup.add(scleraMesh);
-
-    // Iris (Teal Circle/Lens on the front facing the lens Z = -1.0)
-    // Rotate to face the incoming light rays (z axis)
-    const irisGeo = new THREE.CircleGeometry(0.38, 32);
-    const irisMat = new THREE.MeshStandardMaterial({ 
-      color: 0x0d9488, // Emerald teal iris
-      roughness: 0.1,
-      metalness: 0.1,
-      side: THREE.DoubleSide
-    });
-    const irisMesh = new THREE.Mesh(irisGeo, irisMat);
-    irisMesh.position.set(0, 0, -1.01); // Just slightly offset from center
-    irisMesh.rotation.y = Math.PI; // Face the lens
-    eyeballGroup.add(irisMesh);
-
-    // Pupil (Black Circle)
-    const pupilGeo = new THREE.CircleGeometry(0.2, 32);
-    const pupilMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
-    const pupilMesh = new THREE.Mesh(pupilGeo, pupilMat);
-    pupilMesh.position.set(0, 0, -1.02);
-    pupilMesh.rotation.y = Math.PI;
-    eyeballGroup.add(pupilMesh);
-
-    // 8. Ray Group Container
-    const raysGroup = new THREE.Group();
-    scene.add(raysGroup);
-    raysGroupRef.current = raysGroup;
-
-    // Handle full responsiveness using ResizeObserver
-    const container = canvasRef.current.parentElement;
-    let initialWidth = 300;
-    if (container) {
-      initialWidth = Math.min(container.clientWidth - 32, 350);
-      renderer.setSize(initialWidth, initialWidth);
-    }
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      if (!entries || entries.length === 0) return;
-      const entry = entries[0];
-      const newWidth = Math.min(entry.contentRect.width - 32, 350);
-      if (newWidth > 100) {
-        renderer.setSize(newWidth, newWidth);
-      }
-    });
-
-    if (container) {
-      resizeObserver.observe(container);
-    }
-
-    // Animation loop
-    let animationFrameId: number;
-    const animate = () => {
-      if (lensMeshRef.current && eyeballGroupRef.current && raysGroupRef.current) {
-        // Read directly from rotationRef to resolve the stale closure bug!
-        lensMeshRef.current.rotation.x = rotationRef.current.x;
-        lensMeshRef.current.rotation.y = rotationRef.current.y;
-        
-        eyeballGroupRef.current.rotation.x = rotationRef.current.x;
-        eyeballGroupRef.current.rotation.y = rotationRef.current.y;
-        
-        raysGroupRef.current.rotation.x = rotationRef.current.x;
-        raysGroupRef.current.rotation.y = rotationRef.current.y;
-      }
-
-      renderer.render(scene, camera);
-      animationFrameId = requestAnimationFrame(animate);
-    };
-    animate();
-
-    // Cleanup
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      geometry.dispose();
-      lensMaterial.dispose();
-      rimGeo.dispose();
-      rimMat.dispose();
-      tabGeo.dispose();
-      tabMat.dispose();
-      scleraGeo.dispose();
-      scleraMat.dispose();
-      irisGeo.dispose();
-      irisMat.dispose();
-      pupilGeo.dispose();
-      pupilMat.dispose();
-      renderer.dispose();
-      resizeObserver.disconnect();
-    };
-  }, []);
-
-  // Update Scene when Theme changes
-  useEffect(() => {
-    const scene = sceneRef.current;
-    if (scene) {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      scene.background = new THREE.Color(isDark ? 0x181124 : 0xfffbf7);
-    }
-  }, [sph, cyl, isCorrected]);
-
-  // Render 3D Rays and deform lens
-  useEffect(() => {
-    const geometry = lensGeometryRef.current;
-    const originalPositions = originalPositionsRef.current;
-    const raysGroup = raysGroupRef.current;
-
-    if (!geometry || !originalPositions) return;
-
-    // 1. DEFORM LENS GEOMETRY
-    const positionAttr = geometry.getAttribute('position');
-    const positions = positionAttr.array as Float32Array;
-    
-    const sphFactor = sph * 0.04;
-    const cylFactor = cyl * 0.04;
-
-    for (let i = 0; i < positions.length; i += 3) {
-      const x = originalPositions[i];
-      const y = originalPositions[i + 1];
-      const z = originalPositions[i + 2];
-
-      const r2 = x * x + y * y;
-
-      let newZ = z;
-      if (z > 0.01) {
-        newZ = z + (2.0 - r2 * 0.4) * sphFactor + (2.0 - x * x * 0.5) * cylFactor;
-      } else if (z < -0.01) {
-        newZ = z - (2.0 - r2 * 0.4) * sphFactor - (2.0 - x * x * 0.5) * cylFactor;
-      }
-
-      positions[i + 2] = newZ;
-    }
-
-    positionAttr.needsUpdate = true;
-    geometry.computeVertexNormals();
-
-    // 2. TRACE 3D LIGHT RAYS AS 3D GLOWING CYLINDERS (instead of 1px lines!)
-    if (raysGroup) {
-      // Clear old beam meshes
-      while (raysGroup.children.length > 0) {
-        const obj = raysGroup.children[0] as THREE.Mesh;
-        raysGroup.remove(obj);
-        if (obj.geometry) obj.geometry.dispose();
-        if (obj.material) (obj.material as THREE.Material).dispose();
-      }
-
-      const rayPositions = [
-        { x: -0.7, y: 0.7 },
-        { x: 0.7, y: 0.7 },
-        { x: 0, y: 0 },
-        { x: -0.7, y: -0.7 },
-        { x: 0.7, y: -0.7 }
-      ];
-
-      const rayColor = isCorrected ? 0x2dd4bf : 0xf472b6; // Teal for corrected, pink for blurry
-
-      // Helper function to create a 3D cylindrical beam between two points
-      const createCylinderBeam = (p1: THREE.Vector3, p2: THREE.Vector3) => {
-        const direction = new THREE.Vector3().subVectors(p2, p1);
-        const length = direction.length();
-        
-        // Dynamic cylinder geometry matching length
-        const beamGeo = new THREE.CylinderGeometry(0.03, 0.03, length, 8);
-        beamGeo.translate(0, length / 2, 0); // Shift pivot to base
-        beamGeo.rotateX(Math.PI / 2); // Align cylinder axis to Z axis
-        
-        const beamMat = new THREE.MeshBasicMaterial({
-          color: rayColor,
-          transparent: true,
-          opacity: 0.75
-        });
-
-        const beamMesh = new THREE.Mesh(beamGeo, beamMat);
-        beamMesh.position.copy(p1);
-        beamMesh.lookAt(p2);
-        return beamMesh;
-      };
-
-      rayPositions.forEach((pos) => {
-        // Calculate points
-        const pt1 = new THREE.Vector3(pos.x, pos.y, -4);
-        const pt2 = new THREE.Vector3(pos.x, pos.y, -0.2);
-
-        let targetZ = 3.0; // target retina position is Z = 3.0 (where eyeball is)
-        let targetX = 0;
-        let targetY = 0;
-
-        if (isCorrected) {
-          // Perfectly focused on eyeball iris (Z = 2.0 is the front face of eyeball!)
-          targetX = 0;
-          targetY = 0;
-          targetZ = 2.0;
-        } else {
-          // Uncorrected focal point calculation
-          if (sph === 0) {
-            targetX = pos.x;
-            targetY = pos.y;
-            targetZ = 2.0; // stays parallel
-          } else if (sph < 0) {
-            // Myopia: focuses BEFORE eyeball (e.g. Z = 1.0)
-            const focalZ = 2.0 + 2.0 / sph;
-            targetX = pos.x * (1 - 2.0 / focalZ);
-            targetY = pos.y * (1 - 2.0 / focalZ);
-            targetZ = 2.0; // continues to eyeball
-          } else {
-            // Hyperopia: focuses BEHIND eyeball (e.g. Z = 4.0)
-            const focalZ = 2.0 + 2.0 / sph;
-            targetX = pos.x * (1 - 2.0 / focalZ);
-            targetY = pos.y * (1 - 2.0 / focalZ);
-            targetZ = 2.0;
-          }
-
-          // Apply astigmatism cylinder shift
-          if (cyl !== 0) {
-            const astigmatismZ = 2.0 + 1.8 / cyl;
-            targetX = targetX * (1 - 2.0 / astigmatismZ);
-          }
-        }
-
-        const pt3 = new THREE.Vector3(pos.x, pos.y, 0.2);
-        const pt4 = new THREE.Vector3(targetX, targetY, targetZ);
-
-        // Beam 1: Entering light (Parallel from Z = -4 to Z = -0.2)
-        raysGroup.add(createCylinderBeam(pt1, pt2));
-        
-        // Beam 2: Passing through lens (Z = -0.2 to Z = 0.2)
-        raysGroup.add(createCylinderBeam(pt2, pt3));
-
-        // Beam 3: Exiting/Refracting light (From Z = 0.2 to target retina Z = 2.0)
-        raysGroup.add(createCylinderBeam(pt3, pt4));
-      });
-    }
-
-  }, [sph, cyl, isCorrected]);
-
-  // Formatted string helper
   const formatValue = (val: number) => {
     if (val === 0) return '0.00';
     return (val > 0 ? '+' : '') + val.toFixed(2);
   };
 
-  const getBlurValue = () => {
-    if (isCorrected) return 0;
-    
-    const totalAmetropia = Math.abs(sph) + Math.abs(cyl) * 0.8;
-    if (totalAmetropia === 0) return 0;
-    
-    return Math.min(12, 1 + totalAmetropia * 1.8);
+  // Physics-based Thickness Calculation (for typical 50mm caliber lens)
+  // Minus lenses (myopia) are thick at the edges and thin at the center (fixed at 1.0mm center)
+  // Plus lenses (hyperopia) are thick at the center and thin at the edges (fixed at 1.0mm edge)
+  const calculateThickness = (index: number) => {
+    const absSph = Math.abs(sph);
+    const absCyl = Math.abs(cyl);
+    const totalPower = absSph + absCyl * 0.6; // Cyl contribution to total power
+
+    // Standard thickness factor based on lens refractive index
+    // Higher index bends light more efficiently -> thinner lens
+    const indexFactor = 0.5 / (index - 1);
+
+    if (sph <= 0) {
+      // Minus Lens: Edge thickness is calculated, center is fixed at 1.0mm
+      const edge = 1.0 + (totalPower * 1.5 * indexFactor);
+      return { type: 'edge', value: parseFloat(edge.toFixed(1)) };
+    } else {
+      // Plus Lens: Center thickness is calculated, edge is fixed at 1.0mm
+      const center = 1.0 + (totalPower * 1.5 * indexFactor);
+      return { type: 'center', value: parseFloat(center.toFixed(1)) };
+    }
   };
 
-  const needsThinning = Math.abs(sph) > 3.00 || Math.abs(cyl) > 2.00;
+  const indexData = [
+    { id: '1.5', name: t.indexStandard, index: 1.5, reduction: '0%', desc: t.standardDesc },
+    { id: '1.6', name: t.indexThin, index: 1.6, reduction: '-20%', desc: t.thinDesc },
+    { id: '1.67', name: t.indexSuperThin, index: 1.67, reduction: '-35%', desc: t.superThinDesc },
+    { id: '1.74', name: t.indexUltraThin, index: 1.74, reduction: '-45%', desc: t.ultraThinDesc },
+  ];
+
+  // Determine Recommendation Badge
+  const getRecommendation = (indexVal: number) => {
+    const totalPower = Math.abs(sph) + Math.abs(cyl) * 0.8;
+
+    if (totalPower <= 2.00) {
+      if (indexVal === 1.5) return { text: 'Recomendada 🌟', class: 'rec-badge-primary' };
+      return { text: 'Opcional', class: 'rec-badge-secondary' };
+    } else if (totalPower > 2.00 && totalPower <= 4.00) {
+      if (indexVal === 1.6) return { text: 'Recomendada 🌟', class: 'rec-badge-primary' };
+      if (indexVal === 1.5) return { text: 'Muy Gruesa ⚠️', class: 'rec-badge-warning' };
+      return { text: 'Opcional', class: 'rec-badge-secondary' };
+    } else if (totalPower > 4.00 && totalPower <= 6.00) {
+      if (indexVal === 1.67) return { text: 'Recomendada 🌟', class: 'rec-badge-primary' };
+      if (indexVal === 1.5 || indexVal === 1.6) return { text: 'Muy Gruesa ⚠️', class: 'rec-badge-warning' };
+      return { text: 'Opcional', class: 'rec-badge-secondary' };
+    } else {
+      if (indexVal === 1.74) return { text: 'Recomendada 🌟', class: 'rec-badge-primary' };
+      if (indexVal === 1.67) return { text: 'Ideal Premium', class: 'rec-badge-success' };
+      return { text: 'Muy Gruesa ⚠️', class: 'rec-badge-warning' };
+    }
+  };
+
+  // Get Hira's custom optician frame advice based on values
+  const getHiraAdvice = () => {
+    const totalPower = Math.abs(sph) + Math.abs(cyl) * 0.8;
+    if (sph === 0 && cyl === 0) {
+      return '¡Tienes una visión perfecta! No necesitas cristales graduados, pero unas gafas con filtro de luz azul sin graduación te protegerán del cansancio de las pantallas.';
+    }
+    
+    let advice = '';
+    if (totalPower <= 2.00) {
+      advice = 'Tu graduación es bajita. Te recomiendo monturas ligeras de metal o pasta fina. La lente estándar 1.5 es económica y te quedará genial.';
+    } else if (totalPower > 2.00 && totalPower <= 4.00) {
+      advice = 'Para evitar cristales con bordes visibles, una reducción de 1.6 es tu mejor opción. Combínala con una montura de acetato de tamaño medio para disimular el espesor.';
+    } else {
+      advice = 'Al tener una graduación moderada/alta, te aconsejo usar monturas redondas u ovaladas de acetato grueso y calibre pequeño. Las lentes 1.67 o 1.74 reducirán drásticamente los aros concéntricos y el efecto de ojo pequeño.';
+    }
+
+    if (Math.abs(cyl) >= 1.5) {
+      advice += ' Además, dado tu astigmatismo, es vital un correcto centrado óptico en el taller para garantizar el eje correcto y evitar mareos.';
+    }
+
+    return advice;
+  };
+
+  // Draw 2D Lens SVG Profile representation
+  const renderLensProfile = (thicknessVal: number) => {
+    const isMinus = sph <= 0;
+    
+    // Scale thickness between 4px (thin) and 45px (thick) for the SVG rendering
+    const minPx = 4;
+    const maxPx = 40;
+    const maxCalc = 8.0; // cap for thickness calculation scale
+    
+    const calculatedPx = minPx + (thicknessVal / maxCalc) * (maxPx - minPx);
+    const renderThick = Math.min(maxPx, calculatedPx);
+
+    if (isMinus) {
+      // Minus: thin center (4px), thick edges (renderThick)
+      // Path: Top curve bows downward, bottom curve bows upward
+      return (
+        <svg viewBox="0 0 160 50" className="lens-svg-draw">
+          {/* Lens body */}
+          <path 
+            d={`M 10,2 C 50,15 110,15 150,2 L 150,${renderThick} C 110,${renderThick - 10} 50,${renderThick - 10} 10,${renderThick} Z`} 
+            fill="rgba(13, 148, 136, 0.15)" 
+            stroke="var(--accent-teal)" 
+            strokeWidth="2.5" 
+          />
+          {/* Glare line */}
+          <path d="M 30,12 C 45,16 55,16 65,14" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.6" />
+        </svg>
+      );
+    } else {
+      // Plus: thick center (renderThick), thin edges (4px)
+      // Path: Top curve bows upward, bottom curve bows downward
+      return (
+        <svg viewBox="0 0 160 50" className="lens-svg-draw">
+          {/* Lens body */}
+          <path 
+            d={`M 10,${renderThick - 4} C 50,2 110,2 150,${renderThick - 4} L 150,${renderThick} C 110,${renderThick + 4} 50,${renderThick + 4} 10,${renderThick} Z`} 
+            fill="rgba(236, 72, 153, 0.15)" 
+            stroke="var(--accent-pink)" 
+            strokeWidth="2.5" 
+          />
+          {/* Glare line */}
+          <path d="M 65,8 C 80,6 95,6 105,9" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.6" />
+        </svg>
+      );
+    }
+  };
 
   return (
     <section id="interactive" className="interactive-section">
@@ -435,171 +157,104 @@ export const InteractiveOptics: React.FC = () => {
           <p>{t.interactiveSubtitle}</p>
         </div>
 
-        <div className="grid-2 interactive-grid">
-          {/* Left Panel: Sliders & Controls */}
-          <div className="control-panel glass-card">
-            <h3 className="interactive-card-title">
-              <Eye size={22} className="card-title-icon pink-color" />
-              {t.prescriptionDecoderTitle}
-            </h3>
-            <p className="interactive-card-sub">{t.prescriptionDecoderSubtitle}</p>
+        {/* Inputs selector panel */}
+        <div className="optimizer-inputs-panel glass-card">
+          <h3 className="inputs-title">
+            <Sparkles size={22} className="title-icon pink-color" />
+            {t.calculatorSubtitle}
+          </h3>
 
-            <div className="sliders-container">
-              {/* SPH Slider */}
-              <div className="slider-group">
-                <div className="slider-header">
-                  <label className="slider-label">{t.sphLabel}</label>
-                  <span className="slider-value-badge" style={{ backgroundColor: sph === 0 ? 'var(--text-muted)' : sph > 0 ? 'var(--accent-peach)' : 'var(--accent-pink)' }}>
-                    {formatValue(sph)} D
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="-6.00"
-                  max="6.00"
-                  step="0.25"
-                  value={sph}
-                  onChange={(e) => setSph(parseFloat(e.target.value))}
-                  className="prescription-slider"
-                />
-                <p className="slider-help-text">{t.sphHelp}</p>
-              </div>
-
-              {/* CYL Slider */}
-              <div className="slider-group">
-                <div className="slider-header">
-                  <label className="slider-label">{t.cylLabel}</label>
-                  <span className="slider-value-badge" style={{ backgroundColor: cyl === 0 ? 'var(--text-muted)' : 'var(--accent-teal)' }}>
-                    {formatValue(cyl)} D
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="-4.00"
-                  max="0.00"
-                  step="0.25"
-                  value={cyl}
-                  onChange={(e) => setCyl(parseFloat(e.target.value))}
-                  className="prescription-slider"
-                />
-                <p className="slider-help-text">{t.cylHelp}</p>
-              </div>
-            </div>
-
-            {/* Toggle Switch */}
-            <div className="toggle-container">
-              <span className="toggle-label">{t.applyCorrection}</span>
-              <button 
-                onClick={() => setIsCorrected(!isCorrected)} 
-                className={`custom-toggle-btn ${isCorrected ? 'active-corrected' : 'active-blurry'}`}
+          <div className="dropdowns-row">
+            {/* SPH Dropdown */}
+            <div className="select-group">
+              <label className="select-label">{t.sphLabel}</label>
+              <select 
+                value={sph} 
+                onChange={(e) => setSph(parseFloat(e.target.value))}
+                className="custom-select"
               >
-                <span className="toggle-knob"></span>
-                <span className="toggle-text-inside">
-                  {isCorrected ? t.applyCorrection.slice(0, 18) + '...' : t.simulateVision.slice(0, 18) + '...'}
-                </span>
-              </button>
+                {sphRange.map((val) => (
+                  <option key={val} value={val}>
+                    {formatValue(val)} D
+                  </option>
+                ))}
+              </select>
             </div>
-            
-            {/* Blurry Vision Text Simulation */}
-            <div className="text-blur-simulation-box">
-              <p className="sim-title-text">{isCorrected ? t.viewCorrectedText : t.viewBlurryText}:</p>
-              <div className="simulation-screen">
-                <p 
-                  className="sim-blurred-text"
-                  style={{ filter: `blur(${getBlurValue()}px)`, transition: 'filter 0.3s ease' }}
-                >
-                  {t.aboutHighlightText}
-                </p>
-              </div>
+
+            {/* CYL Dropdown */}
+            <div className="select-group">
+              <label className="select-label">{t.cylLabel}</label>
+              <select 
+                value={cyl} 
+                onChange={(e) => setCyl(parseFloat(e.target.value))}
+                className="custom-select"
+              >
+                {cylRange.map((val) => (
+                  <option key={val} value={val}>
+                    {formatValue(val)} D
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
+        </div>
 
-          {/* Right Panel: 3D Refraction Lab & Recommendations */}
-          <div className="result-panel glass-card">
-            <div className="three-lab-header">
-              <h3 className="interactive-card-title">
-                <Sparkles size={22} className="card-title-icon teal-color" />
-                3D Refraction Lab
-              </h3>
-              
-              <div className="view-presets">
-                <button onClick={() => setView('angled')} className="preset-btn" title="Angled View"><RotateCcw size={14} /></button>
-                <button onClick={() => setView('profile')} className="preset-btn" title="Side Profile"><ZoomIn size={14} /></button>
-                <button onClick={() => setView('front')} className="preset-btn" title="Front View"><ZoomOut size={14} /></button>
-              </div>
-            </div>
+        {/* Main Comparison Dashboard */}
+        <h3 className="dashboard-section-title">{t.thicknessCompareTitle}</h3>
+        <div className="grid-4 index-comparison-grid">
+          {indexData.map((item) => {
+            const result = calculateThickness(item.index);
+            const badge = getRecommendation(item.index);
 
-            {/* 3D Canvas Box */}
-            <div className="canvas-wrapper-container">
-              <canvas
-                ref={canvasRef}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleMouseUp}
-                className="three-canvas"
-              />
-              <div className="drag-hint">
-                <span>Drag to Rotate Lens ⟳</span>
-              </div>
-            </div>
+            return (
+              <div key={item.id} className="index-card glass-card">
+                {/* Badge indicator */}
+                <span className={`recommendation-badge ${badge.class}`}>
+                  {badge.text}
+                </span>
 
-            {/* Prescription Analysis Output */}
-            <div className="prescription-analysis">
-              {sph === 0 && cyl === 0 ? (
-                <div className="analysis-empty">
-                  <AlertCircle size={20} className="empty-icon" />
-                  <p><strong>{t.normalVisionTitle}:</strong> Tienes una visión emétrope. Tu lente es plana y los rayos convergen perfectamente en la retina.</p>
+                <h4 className="index-card-name">{item.name}</h4>
+                <div className="index-badge-number">n = {item.index}</div>
+
+                {/* SVG Visual profile */}
+                <div className="lens-visual-container">
+                  {renderLensProfile(result.value)}
                 </div>
-              ) : (
-                <div className="analysis-details">
-                  {sph !== 0 && (
-                    <div className="analysis-item">
-                      <div className="analysis-bullet" style={{ backgroundColor: sph > 0 ? 'var(--accent-peach)' : 'var(--accent-pink)' }}></div>
-                      <div className="analysis-text-wrapper">
-                        <span className="analysis-title">
-                          {sph > 0 ? t.hyperopiaTitle : t.myopiaTitle} ({formatValue(sph)} SPH)
-                        </span>
-                        <p className="analysis-desc">
-                          {sph > 0 ? t.sphExplainPos : t.sphExplainNeg}
-                        </p>
-                      </div>
-                    </div>
-                  )}
 
-                  {cyl !== 0 && (
-                    <div className="analysis-item">
-                      <div className="analysis-bullet" style={{ backgroundColor: 'var(--accent-teal)' }}></div>
-                      <div className="analysis-text-wrapper">
-                        <span className="analysis-title">
-                          {t.astigmatismTitle} ({formatValue(cyl)} CYL)
-                        </span>
-                        <p className="analysis-desc">{t.cylExplain}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Recommendation Card */}
-                  <div className="hira-rec-card">
-                    <div className="hira-rec-header">
-                      <Sparkles size={16} className="hira-rec-icon" />
-                      <span>{t.hiraRecommendation}</span>
-                    </div>
-                    <ul className="hira-rec-list">
-                      <li>✿ {needsThinning ? t.recThinning : t.recStandard}</li>
-                      <li>✿ {t.recAntiReflective}</li>
-                      {Math.abs(sph) > 0.5 && (
-                        <li>✿ {t.recBlueLight}</li>
-                      )}
-                    </ul>
+                {/* Technical data */}
+                <div className="index-technical-details">
+                  <div className="tech-row">
+                    <span className="tech-label">
+                      {result.type === 'edge' ? t.lensEdgeThickness : 'Espesor Centro'}:
+                    </span>
+                    <span className="tech-value">{result.value} mm</span>
+                  </div>
+                  <div className="tech-row">
+                    <span className="tech-label">{t.reductionLabel}:</span>
+                    <span className="tech-value reduction-percentage" style={{ color: item.reduction === '0%' ? 'var(--text-muted)' : 'var(--accent-teal)' }}>
+                      {item.reduction}
+                    </span>
                   </div>
                 </div>
-              )}
+
+                <p className="index-desc-text">{item.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Hira's Professional Advice Card */}
+        <div className="hira-advice-card glass-card">
+          <div className="advice-header">
+            <div className="advice-avatar-circle">
+              <img src="/profile.png" alt="Hira" className="advice-avatar-img" />
             </div>
+            <h4 className="advice-title">
+              <Heart size={16} fill="var(--accent-pink)" color="var(--accent-pink)" className="advice-icon-heart" />
+              {t.hiraAdviceHeader}
+            </h4>
           </div>
+          <p className="advice-content-text">{getHiraAdvice()}</p>
         </div>
       </div>
 
@@ -615,385 +270,294 @@ export const InteractiveOptics: React.FC = () => {
           z-index: 10;
         }
 
-        .interactive-grid {
-          align-items: stretch;
+        /* Inputs Panel */
+        .optimizer-inputs-panel {
+          padding: 2rem;
+          background: var(--bg-secondary);
+          margin-bottom: 3rem;
+          border-radius: 24px;
         }
 
-        .interactive-card-title {
-          font-size: 1.45rem;
+        .inputs-title {
+          font-size: 1.35rem;
+          font-family: var(--font-friendly);
+          color: var(--text-primary);
           display: flex;
           align-items: center;
           gap: 0.6rem;
-          margin-bottom: 0.5rem;
-          font-family: var(--font-friendly);
-          color: var(--text-primary);
+          margin-bottom: 1.5rem;
         }
 
         .pink-color { color: var(--accent-pink); }
-        .teal-color { color: var(--accent-teal); }
 
-        .interactive-card-sub {
-          font-size: 0.95rem;
-          color: var(--text-secondary);
-          margin-bottom: 2rem;
-          text-align: left;
-        }
-
-        /* Control Panel */
-        .control-panel {
-          padding: 2.25rem;
-          background: var(--bg-secondary);
-          display: flex;
-          flex-direction: column;
-          border-radius: 24px;
-        }
-
-        .sliders-container {
-          display: flex;
-          flex-direction: column;
+        .dropdowns-row {
+          display: grid;
+          grid-template-columns: 1fr;
           gap: 1.5rem;
-          margin-bottom: 2rem;
         }
 
-        .slider-group {
+        @media (min-width: 768px) {
+          .dropdowns-row {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        .select-group {
           display: flex;
           flex-direction: column;
-          gap: 0.4rem;
+          gap: 0.5rem;
           text-align: left;
         }
 
-        .slider-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .slider-label {
+        .select-label {
           font-size: 0.95rem;
           font-weight: 700;
-          color: var(--text-primary);
+          color: var(--text-secondary);
           font-family: var(--font-friendly);
         }
 
-        .slider-value-badge {
+        .custom-select {
+          width: 100%;
+          padding: 0.8rem 1.2rem;
+          border-radius: 16px;
+          border: 2px solid var(--border-color);
+          background-color: var(--bg-primary);
+          color: var(--text-primary);
+          font-size: 1rem;
+          font-weight: 700;
+          outline: none;
+          cursor: pointer;
+          font-family: var(--font-sans);
+          transition: border-color var(--transition-fast);
+        }
+
+        .custom-select:focus {
+          border-color: var(--accent-pink);
+        }
+
+        /* Dashboard grid */
+        .dashboard-section-title {
+          font-size: 1.5rem;
+          margin-bottom: 1.5rem;
+          text-align: left;
+          font-family: var(--font-friendly);
+          color: var(--text-primary);
+        }
+
+        .index-comparison-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+          margin-bottom: 3rem;
+        }
+
+        @media (min-width: 576px) {
+          .index-comparison-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (min-width: 992px) {
+          .index-comparison-grid {
+            grid-template-columns: repeat(4, 1fr);
+          }
+        }
+
+        /* Index Card */
+        .index-card {
+          padding: 1.75rem;
+          background: var(--bg-secondary);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          position: relative;
+          border-radius: 24px;
+          border: 1px solid var(--border-color);
+          overflow: hidden;
+        }
+
+        .index-card:hover {
+          border-color: var(--accent-pink);
+        }
+
+        /* Recommendation Badges */
+        .recommendation-badge {
+          position: absolute;
+          top: 0;
+          right: 0;
+          padding: 0.35rem 0.85rem;
+          font-size: 0.75rem;
+          font-weight: 700;
+          border-bottom-left-radius: 14px;
+          font-family: var(--font-friendly);
+        }
+
+        .rec-badge-primary {
+          background-color: rgba(236, 72, 153, 0.15);
+          color: var(--accent-pink);
+        }
+
+        .rec-badge-secondary {
+          background-color: var(--bg-tertiary);
+          color: var(--text-muted);
+        }
+
+        .rec-badge-warning {
+          background-color: rgba(251, 146, 60, 0.15);
+          color: var(--accent-peach);
+        }
+
+        .rec-badge-success {
+          background-color: rgba(13, 148, 136, 0.15);
+          color: var(--accent-teal);
+        }
+
+        .index-card-name {
+          font-size: 1.25rem;
+          font-weight: 700;
+          margin-top: 0.5rem;
+          margin-bottom: 0.15rem;
+          font-family: var(--font-friendly);
+          color: var(--text-primary);
+        }
+
+        .index-badge-number {
           font-size: 0.8rem;
           font-weight: 700;
-          color: #ffffff;
-          padding: 0.25rem 0.75rem;
-          border-radius: 9999px;
-        }
-
-        .prescription-slider {
-          -webkit-appearance: none;
-          width: 100%;
-          height: 8px;
-          border-radius: 5px;
-          background: var(--bg-tertiary);
-          outline: none;
-          margin: 10px 0;
-        }
-
-        .prescription-slider::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 22px;
-          height: 22px;
-          border-radius: 50%;
-          background: var(--accent-pink);
-          cursor: pointer;
-          box-shadow: 0 2px 6px rgba(236, 72, 153, 0.4);
-          transition: transform 0.1s ease;
-        }
-
-        .prescription-slider::-webkit-slider-thumb:hover {
-          transform: scale(1.15);
-        }
-
-        .slider-help-text {
-          font-size: 0.8rem;
           color: var(--text-muted);
-          line-height: 1.4;
-        }
-
-        /* Toggle Button */
-        .toggle-container {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-top: 1px solid var(--border-color);
-          padding-top: 1.25rem;
+          background-color: var(--bg-primary);
+          padding: 0.15rem 0.5rem;
+          border-radius: 6px;
+          border: 1px solid var(--border-color);
           margin-bottom: 1.5rem;
         }
 
-        .toggle-label {
-          font-size: 0.95rem;
-          font-weight: 700;
-          color: var(--text-secondary);
-          font-family: var(--font-friendly);
-        }
-
-        .custom-toggle-btn {
-          position: relative;
-          width: 180px;
-          height: 36px;
-          border-radius: 9999px;
-          border: none;
-          cursor: pointer;
-          outline: none;
-          overflow: hidden;
-          transition: background-color 0.3s ease;
+        /* Lens Drawing */
+        .lens-visual-container {
+          width: 100%;
+          height: 70px;
           display: flex;
           align-items: center;
           justify-content: center;
+          margin-bottom: 1.5rem;
+          background-color: var(--bg-primary);
+          border-radius: 12px;
+          padding: 0.5rem;
+          border: 1px dashed var(--border-color);
         }
 
-        .active-corrected {
-          background-color: var(--accent-teal);
+        .lens-svg-draw {
+          width: 100%;
+          max-width: 140px;
+          height: 100%;
         }
 
-        .active-blurry {
-          background-color: var(--accent-pink);
-        }
-
-        .toggle-knob {
-          position: absolute;
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          background-color: #ffffff;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-          top: 4px;
-          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .active-corrected .toggle-knob {
-          transform: translateX(70px);
-        }
-
-        .active-blurry .toggle-knob {
-          transform: translateX(-70px);
-        }
-
-        .toggle-text-inside {
-          font-size: 0.8rem;
-          font-weight: 700;
-          color: #ffffff;
-          z-index: 10;
-          font-family: var(--font-friendly);
-        }
-
-        /* Blurry Vision Text Box */
-        .text-blur-simulation-box {
-          background: var(--bg-primary);
-          padding: 1.25rem;
-          border-radius: 16px;
-          border: 1px solid var(--border-color);
-          text-align: left;
-        }
-
-        .sim-title-text {
-          font-size: 0.85rem;
-          font-weight: 700;
-          color: var(--text-muted);
-          text-transform: uppercase;
-          margin-bottom: 0.5rem;
-          letter-spacing: 0.05em;
-        }
-
-        .simulation-screen {
-          background: #ffffff;
-          padding: 1rem;
-          border-radius: 10px;
-          border: 1px solid var(--border-color);
-          min-height: 80px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        [data-theme='dark'] .simulation-screen {
-          background: #fdfaf2;
-        }
-
-        .sim-blurred-text {
-          font-size: 0.95rem;
-          font-weight: 600;
-          color: #111111;
-          text-align: center;
-          line-height: 1.5;
-        }
-
-        /* Result Panel */
-        .result-panel {
-          padding: 2.25rem;
-          background: var(--bg-secondary);
+        /* Tech details */
+        .index-technical-details {
+          width: 100%;
           display: flex;
           flex-direction: column;
-          border-radius: 24px;
-        }
-
-        .three-lab-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          width: 100%;
+          gap: 0.5rem;
+          border-top: 1px dashed var(--border-color);
+          padding-top: 1rem;
           margin-bottom: 1rem;
         }
 
-        .view-presets {
+        .tech-row {
           display: flex;
-          gap: 0.4rem;
+          justify-content: space-between;
+          font-size: 0.85rem;
+          font-weight: 600;
         }
 
-        .preset-btn {
-          width: 32px;
-          height: 32px;
-          border-radius: 8px;
-          background: var(--bg-primary);
-          border: 1px solid var(--border-color);
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--text-secondary);
-          transition: all var(--transition-fast);
-        }
-
-        .preset-btn:hover {
-          border-color: var(--accent-pink);
-          color: var(--accent-pink);
-          transform: translateY(-1px);
-        }
-
-        .canvas-wrapper-container {
-          position: relative;
-          width: 100%;
-          background: var(--bg-primary);
-          border-radius: 20px;
-          border: 1.5px solid var(--border-color);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 1.5rem;
-          margin-bottom: 1.5rem;
-          box-shadow: inset 0 2px 8px rgba(0,0,0,0.02);
-        }
-
-        .three-canvas {
-          cursor: grab;
-          width: 100%;
-          max-width: 350px;
-          height: auto;
-          aspect-ratio: 1 / 1;
-          border-radius: 16px;
-        }
-
-        .three-canvas:active {
-          cursor: grabbing;
-        }
-
-        .drag-hint {
-          font-size: 0.8rem;
-          font-weight: 700;
+        .tech-label {
           color: var(--text-muted);
-          margin-top: 0.5rem;
-          pointer-events: none;
         }
 
-        /* Prescription Analysis Output */
-        .prescription-analysis {
-          text-align: left;
-          flex-grow: 1;
+        .tech-value {
+          color: var(--text-primary);
+          font-weight: 700;
         }
 
-        .analysis-empty {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 1.25rem;
-          background: var(--bg-primary);
-          border-radius: 16px;
-          border: 1px solid var(--border-color);
-          font-size: 0.95rem;
+        .reduction-percentage {
+          font-family: var(--font-friendly);
+        }
+
+        .index-desc-text {
+          font-size: 0.85rem;
           color: var(--text-secondary);
+          line-height: 1.45;
+          text-align: center;
         }
 
-        .empty-icon {
-          color: var(--accent-teal);
-          flex-shrink: 0;
-        }
-
-        .analysis-details {
+        /* Hira Professional Advice Card */
+        .hira-advice-card {
+          padding: 2rem;
+          background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+          border: 1.5px solid var(--border-color);
           display: flex;
           flex-direction: column;
           gap: 1.25rem;
+          text-align: left;
+          border-radius: 24px;
         }
 
-        .analysis-item {
+        @media (min-width: 768px) {
+          .hira-advice-card {
+            flex-direction: row;
+            align-items: center;
+            gap: 2rem;
+          }
+        }
+
+        .advice-header {
           display: flex;
-          gap: 0.75rem;
-          align-items: flex-start;
-        }
-
-        .analysis-bullet {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          margin-top: 0.4rem;
+          align-items: center;
+          gap: 1rem;
           flex-shrink: 0;
         }
 
-        .analysis-text-wrapper {
-          font-size: 0.95rem;
-          color: var(--text-secondary);
-          line-height: 1.5;
+        .advice-avatar-circle {
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          overflow: hidden;
+          border: 3px solid var(--accent-pink);
+          box-shadow: 0 4px 10px rgba(236,72,153,0.15);
         }
 
-        .analysis-title {
+        .advice-avatar-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: 50% 30%;
+        }
+
+        .advice-title {
+          font-size: 1.25rem;
           font-weight: 700;
           color: var(--text-primary);
-          display: block;
-          margin-bottom: 0.15rem;
           font-family: var(--font-friendly);
-        }
-
-        /* Hira Recommendation Card */
-        .hira-rec-card {
-          background: var(--bg-tertiary);
-          border-radius: 20px;
-          padding: 1.25rem;
-          border: 1.5px solid var(--border-color);
-        }
-
-        .hira-rec-header {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          font-weight: 700;
-          color: var(--accent-pink);
-          font-size: 1.05rem;
-          margin-bottom: 0.75rem;
-          font-family: var(--font-friendly);
+          gap: 0.4rem;
         }
 
-        .hira-rec-icon {
-          animation: pulseEffect 2s infinite alternate;
+        .advice-icon-heart {
+          animation: beat 1.5s infinite alternate;
         }
 
-        @keyframes pulseEffect {
+        @keyframes beat {
           0% { transform: scale(1); }
           100% { transform: scale(1.15); }
         }
 
-        .hira-rec-list {
-          list-style: none;
-          display: flex;
-          flex-direction: column;
-          gap: 0.6rem;
-          font-size: 0.9rem;
+        .advice-content-text {
+          font-size: 1rem;
           color: var(--text-secondary);
-          line-height: 1.5;
+          line-height: 1.7;
+          font-weight: 500;
+          flex-grow: 1;
         }
       `}</style>
     </section>

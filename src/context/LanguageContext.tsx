@@ -40,29 +40,23 @@ interface Translations {
   
   interactiveTitle: string;
   interactiveSubtitle: string;
-  prescriptionDecoderTitle: string;
-  prescriptionDecoderSubtitle: string;
+  calculatorTitle: string;
+  calculatorSubtitle: string;
   sphLabel: string;
   cylLabel: string;
-  sphHelp: string;
-  cylHelp: string;
-  decodeBtn: string;
-  myopiaTitle: string;
-  hyperopiaTitle: string;
-  astigmatismTitle: string;
-  normalVisionTitle: string;
-  sphExplainNeg: string;
-  sphExplainPos: string;
-  cylExplain: string;
-  hiraRecommendation: string;
-  recThinning: string;
-  recStandard: string;
-  recBlueLight: string;
-  recAntiReflective: string;
-  applyCorrection: string;
-  simulateVision: string;
-  viewCorrectedText: string;
-  viewBlurryText: string;
+  idealIndexTitle: string;
+  thicknessCompareTitle: string;
+  indexStandard: string;
+  indexThin: string;
+  indexSuperThin: string;
+  indexUltraThin: string;
+  standardDesc: string;
+  thinDesc: string;
+  superThinDesc: string;
+  ultraThinDesc: string;
+  hiraAdviceHeader: string;
+  lensEdgeThickness: string;
+  reductionLabel: string;
   
   eduTitle: string;
   eduSubtitle: string;
@@ -154,7 +148,7 @@ export const translations: Record<Language, Translations> = {
     navAbout: 'Sobre Mí',
     navSkills: 'Especialidades',
     navExperience: 'Experiencia',
-    navInteractive: 'Decodificador',
+    navInteractive: 'Lentes',
     navEducation: 'Formación',
     navContact: 'Contacto',
     
@@ -185,31 +179,25 @@ export const translations: Record<Language, Translations> = {
     expSubtitle: 'Mi dulce camino en gabinetes universitarios, talleres de óptica y atención clínica.',
     expPresent: 'Actualidad',
     
-    interactiveTitle: 'Decodificador de Receta Visual 👓',
-    interactiveSubtitle: '¿Tienes dudas sobre los números de tu receta de gafas? Configura los deslizadores y te explico qué significan con consejos de salud visual personalizados.',
-    prescriptionDecoderTitle: 'Traductor de Graduación Ocular',
-    prescriptionDecoderSubtitle: 'Mueve los valores de Esfera y Cilindro para ver qué significan de forma súper clara.',
-    sphLabel: 'Esfera (SPH) - Distancia',
+    interactiveTitle: 'Calculador de Reducción de Cristales 👓',
+    interactiveSubtitle: '¿No sabes qué reducción elegir para tus gafas? Introduce tu graduación y mira la diferencia de grosor y peso de forma sencilla.',
+    calculatorTitle: 'Grosor de Cristales',
+    calculatorSubtitle: 'Selecciona tu Esfera y Cilindro para ver qué lente te recomienda Hira.',
+    sphLabel: 'Esfera (SPH) - Miopía / Hipermetropía',
     cylLabel: 'Cilindro (CYL) - Astigmatismo',
-    sphHelp: 'Negativo (-) para Miopía (ver mal de lejos) | Positivo (+) para Hipermetropía (ver mal de cerca).',
-    cylHelp: 'Representa el Astigmatismo (los objetos se ven con bordes borrosos o distorsionados).',
-    decodeBtn: 'Traducir Receta',
-    myopiaTitle: 'Miopía 🌸',
-    hyperopiaTitle: 'Hipermetropía 🌟',
-    astigmatismTitle: 'Astigmatismo 🎀',
-    normalVisionTitle: 'Visión Normal 💖',
-    sphExplainNeg: 'Tienes dificultades para ver los objetos lejanos. Cuanto más negativo es el número, más borrosidad experimentas de lejos.',
-    sphExplainPos: 'Tus ojitos tienen que hacer un esfuerzo extra para enfocar de cerca, lo que puede provocar fatiga visual al leer o usar pantallas.',
-    cylExplain: 'La córnea de tu ojo tiene una forma ovalada en lugar de redonda. Esto hace que los contornos y detalles se vean un poco distorsionados a cualquier distancia.',
-    hiraRecommendation: 'Recomendación de Hira:',
-    recThinning: 'Al tener una graduación moderada/alta, te aconsejo usar lentes reducidas (índice 1.6 o superior) para que tus gafas queden finas, ligeras y muy bonitas.',
-    recStandard: 'Tus lentes serán muy ligeras y finas de forma natural con el índice estándar.',
-    recBlueLight: '¡Te recomiendo el filtro de luz azul (Blue Cut) si pasas más de 3 horas al día con el móvil u ordenadores para evitar la fatiga visual!',
-    recAntiReflective: 'Un buen tratamiento antirreflejante eliminará destellos y te ayudará a tener una visión más cómoda, especialmente conduciendo de noche.',
-    applyCorrection: 'Aplicar lentes correctoras de Hira',
-    simulateVision: 'Ver simulación de visión borrosa',
-    viewCorrectedText: 'Visión con Gafas (Graduación Correctora)',
-    viewBlurryText: 'Visión sin Gafas (Graduación Simulada)',
+    idealIndexTitle: 'Lente Recomendada',
+    thicknessCompareTitle: 'Espesor Estimado del Cristal',
+    indexStandard: 'Estándar 1.5',
+    indexThin: 'Reducida 1.6',
+    indexSuperThin: 'Extra-Fina 1.67',
+    indexUltraThin: 'Ultra-Fina 1.74',
+    standardDesc: 'Apta para graduaciones bajas. Lente básica, más económica pero más gruesa y pesada.',
+    thinDesc: '¡20% más fina! Muy resistente y ligera. Es la ideal para monturas al aire o ranuradas.',
+    superThinDesc: '¡35% más fina! Excelente estética. Ideal para evitar el efecto de ojo grande o pequeño.',
+    ultraThinDesc: '¡45% más fina! La máxima reducción física. Ideal para graduaciones altas.',
+    hiraAdviceHeader: 'El consejo de Hira 🌸',
+    lensEdgeThickness: 'Espesor del Borde',
+    reductionLabel: 'Reducción de peso',
     
     eduTitle: 'Educación y Formación',
     eduSubtitle: 'Mi formación en la UPC y mis especialidades más queridas.',
@@ -234,7 +222,7 @@ export const translations: Record<Language, Translations> = {
     contactCallBtn: 'Llamar',
     
     aboutHighlightText: 'Especialista en refracción clínica, lentes de contacto y asesoramiento de monturas personalizadas.',
-    aboutHighlight1Title: 'Precision Refraction',
+    aboutHighlight1Title: 'Refracción de Precisión',
     aboutHighlight1Desc: 'Exámenes detallados para compensar miopía, hipermetropía, astigmatismo y presbicia con mucho mimo.',
     aboutHighlight2Title: 'Taller y Montaje',
     aboutHighlight2Desc: 'Corte, biselado y montaje de lentes en todo tipo de monturas en el laboratorio clínico.',
@@ -322,7 +310,7 @@ export const translations: Record<Language, Translations> = {
     navAbout: 'About Me',
     navSkills: 'Specialties',
     navExperience: 'Experience',
-    navInteractive: 'Decoder',
+    navInteractive: 'Lenses',
     navEducation: 'Education',
     navContact: 'Contact',
     
@@ -353,31 +341,25 @@ export const translations: Record<Language, Translations> = {
     expSubtitle: 'My sweet journey in university clinics, optical workshops, and clinical care.',
     expPresent: 'Present',
     
-    interactiveTitle: 'Visual Prescription Decoder 👓',
-    interactiveSubtitle: 'Have doubts about the numbers on your glasses prescription? Adjust the sliders and let me explain what they mean with personalized visual health tips.',
-    prescriptionDecoderTitle: 'Eye Prescription Translator',
-    prescriptionDecoderSubtitle: 'Adjust the Sphere and Cylinder values to see what they mean clearly.',
-    sphLabel: 'Sphere (SPH) - Distance',
+    interactiveTitle: 'Lens Thinning & Index Calculator 👓',
+    interactiveSubtitle: 'Not sure which lens index to select for your glasses? Enter your prescription and easily see the difference in thickness and weight.',
+    calculatorTitle: 'Lens Thickness',
+    calculatorSubtitle: 'Select your Sphere and Cylinder values to see what lens Hira recommends.',
+    sphLabel: 'Sphere (SPH) - Nearsightedness / Farsightedness',
     cylLabel: 'Cylinder (CYL) - Astigmatism',
-    sphHelp: 'Negative (-) for Nearsightedness (poor far vision) | Positive (+) for Farsightedness (poor near vision).',
-    cylHelp: 'Represents Astigmatism (objects appear with blurry or distorted edges).',
-    decodeBtn: 'Translate Prescription',
-    myopiaTitle: 'Nearsightedness 🌸',
-    hyperopiaTitle: 'Farsightedness 🌟',
-    astigmatismTitle: 'Astigmatism 🎀',
-    normalVisionTitle: 'Normal Vision 💖',
-    sphExplainNeg: 'You have difficulty seeing distant objects clearly. The more negative the number, the more blurriness you experience in the distance.',
-    sphExplainPos: 'Your eyes have to make an extra effort to focus up close, which can lead to eye strain when reading or looking at screens.',
-    cylExplain: 'Your eye\'s cornea has an oval shape instead of round. This causes outlines and details to look slightly distorted at any distance.',
-    hiraRecommendation: 'Hira\'s Recommendation:',
-    recThinning: 'Since you have a moderate/high prescription, Hira recommends using thinned lenses (index 1.6 or higher) so your glasses remain slim, light, and beautiful.',
-    recStandard: 'Your lenses will naturally be light and thin with the standard index.',
-    recBlueLight: 'I recommend a blue light filter (Blue Cut) if you spend more than 3 hours a day on phones or computers to prevent eye fatigue!',
-    recAntiReflective: 'A high-end anti-reflective coating will eliminate glare and help you have more comfortable vision, especially when driving at night.',
-    applyCorrection: 'Apply Hira\'s corrective lenses',
-    simulateVision: 'See simulated blurry vision',
-    viewCorrectedText: 'Vision with Glasses (Corrected)',
-    viewBlurryText: 'Vision without Glasses (Simulated)',
+    idealIndexTitle: 'Recommended Lens',
+    thicknessCompareTitle: 'Estimated Lens Thickness',
+    indexStandard: 'Standard 1.5',
+    indexThin: 'Thin 1.6',
+    indexSuperThin: 'Super Thin 1.67',
+    indexUltraThin: 'Ultra Thin 1.74',
+    standardDesc: 'Suitable for low prescriptions. Basic lens, more economical but thicker and heavier.',
+    thinDesc: '20% thinner! Highly resistant and lightweight. Ideal choice for rimless or semi-rimless frames.',
+    superThinDesc: '35% thinner! Excellent aesthetics. Ideal to avoid eyes appearing too magnified or minified.',
+    ultraThinDesc: '45% thinner! The maximum physical thickness reduction. Ideal for high prescriptions.',
+    hiraAdviceHeader: 'Hira\'s Advice 🌸',
+    lensEdgeThickness: 'Edge Thickness',
+    reductionLabel: 'Weight reduction',
     
     eduTitle: 'Education & Training',
     eduSubtitle: 'My training at UPC and my most beloved specialties.',
