@@ -20,7 +20,7 @@ export const InteractiveOptics: React.FC = () => {
   const lensMeshRef = useRef<THREE.Mesh | null>(null);
   const originalPositionsRef = useRef<Float32Array | null>(null);
   const raysGroupRef = useRef<THREE.Group | null>(null);
-  const retinaMeshRef = useRef<THREE.Mesh | null>(null);
+  const eyeballGroupRef = useRef<THREE.Group | null>(null);
   
   // Rotation / Drag Interaction State via Ref to prevent stale closures in requestAnimationFrame
   const rotationRef = useRef({ x: 0.2, y: -0.6 });
@@ -89,7 +89,7 @@ export const InteractiveOptics: React.FC = () => {
 
     // 2. Camera setup
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-    camera.position.set(0, 0, 8);
+    camera.position.set(0, 0, 8.5);
     cameraRef.current = camera;
 
     // 3. Renderer setup
@@ -102,19 +102,19 @@ export const InteractiveOptics: React.FC = () => {
     rendererRef.current = renderer;
 
     // 4. Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
     scene.add(ambientLight);
 
-    const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight1.position.set(5, 5, 5);
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.9);
+    dirLight1.position.set(6, 6, 6);
     scene.add(dirLight1);
 
-    const dirLight2 = new THREE.DirectionalLight(0xfc819e, 0.3); // Pink warm light
-    dirLight2.position.set(-5, -5, -5);
+    const dirLight2 = new THREE.DirectionalLight(0xfcb1c4, 0.45); // Cute warm pink light
+    dirLight2.position.set(-6, -6, -3);
     scene.add(dirLight2);
 
     // 5. Geometry & Lens Mesh creation
-    const geometry = new THREE.CylinderGeometry(1.8, 1.8, 0.4, 64, 8);
+    const geometry = new THREE.CylinderGeometry(1.6, 1.6, 0.4, 64, 8);
     geometry.rotateX(Math.PI / 2);
     lensGeometryRef.current = geometry;
 
@@ -125,15 +125,15 @@ export const InteractiveOptics: React.FC = () => {
     // Material with high-end glass physics
     const lensMaterial = new THREE.MeshPhysicalMaterial({
       color: 0xe0f2fe, // Soft blue-teal glass tint
-      transmission: 0.9,
+      transmission: 0.95,
       opacity: 1,
       transparent: true,
-      roughness: 0.05,
-      metalness: 0.1,
+      roughness: 0.02,
+      metalness: 0.05,
       ior: 1.52, // Glass Refractive Index
       thickness: 1.5,
       clearcoat: 1.0,
-      clearcoatRoughness: 0.1,
+      clearcoatRoughness: 0.05,
       side: THREE.DoubleSide
     });
 
@@ -141,15 +141,64 @@ export const InteractiveOptics: React.FC = () => {
     scene.add(lensMesh);
     lensMeshRef.current = lensMesh;
 
-    // 6. Glowing Screen / Eye Target
-    const retinaGeo = new THREE.RingGeometry(1.4, 1.5, 32);
-    const retinaMat = new THREE.MeshBasicMaterial({ color: 0x0d9488, side: THREE.DoubleSide, opacity: 0.4, transparent: true });
-    const retinaMesh = new THREE.Mesh(retinaGeo, retinaMat);
-    retinaMesh.position.set(0, 0, 3);
-    scene.add(retinaMesh);
-    retinaMeshRef.current = retinaMesh;
+    // 6. ADD OPTOMETRIST TRIAL FRAME (Montura de Prueba) around the Lens
+    // Rims of the lens (Cute Pink Torus)
+    const rimGeo = new THREE.TorusGeometry(1.65, 0.1, 16, 64);
+    const rimMat = new THREE.MeshStandardMaterial({ 
+      color: 0xec4899, // Bright pink plastic
+      roughness: 0.2, 
+      metalness: 0.1 
+    });
+    const rimMesh = new THREE.Mesh(rimGeo, rimMat);
+    rimMesh.rotation.x = Math.PI / 2; // Align to Z axis
+    lensMesh.add(rimMesh);
 
-    // 7. Ray Group Container
+    // Trial lens handle/tab (Optometrists use this to rotate axis)
+    const tabGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.6, 16);
+    const tabMat = new THREE.MeshStandardMaterial({ color: 0xfb923c, roughness: 0.3 }); // Peach colored tab
+    const tabMesh = new THREE.Mesh(tabGeo, tabMat);
+    tabMesh.position.set(0, 1.8, 0); // Position at the top of the lens
+    lensMesh.add(tabMesh);
+
+    // 7. ADD GLOSSY 3D EYEBALL (Globo Ocular) at Z = 3
+    const eyeballGroup = new THREE.Group();
+    eyeballGroup.position.set(0, 0, 3);
+    scene.add(eyeballGroup);
+    eyeballGroupRef.current = eyeballGroup;
+
+    // Sclera (White Sphere)
+    const scleraGeo = new THREE.SphereGeometry(1.0, 32, 32);
+    const scleraMat = new THREE.MeshStandardMaterial({ 
+      color: 0xffffff, 
+      roughness: 0.1,
+      metalness: 0.05
+    });
+    const scleraMesh = new THREE.Mesh(scleraGeo, scleraMat);
+    eyeballGroup.add(scleraMesh);
+
+    // Iris (Teal Circle/Lens on the front facing the lens Z = -1.0)
+    // Rotate to face the incoming light rays (z axis)
+    const irisGeo = new THREE.CircleGeometry(0.38, 32);
+    const irisMat = new THREE.MeshStandardMaterial({ 
+      color: 0x0d9488, // Emerald teal iris
+      roughness: 0.1,
+      metalness: 0.1,
+      side: THREE.DoubleSide
+    });
+    const irisMesh = new THREE.Mesh(irisGeo, irisMat);
+    irisMesh.position.set(0, 0, -1.01); // Just slightly offset from center
+    irisMesh.rotation.y = Math.PI; // Face the lens
+    eyeballGroup.add(irisMesh);
+
+    // Pupil (Black Circle)
+    const pupilGeo = new THREE.CircleGeometry(0.2, 32);
+    const pupilMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const pupilMesh = new THREE.Mesh(pupilGeo, pupilMat);
+    pupilMesh.position.set(0, 0, -1.02);
+    pupilMesh.rotation.y = Math.PI;
+    eyeballGroup.add(pupilMesh);
+
+    // 8. Ray Group Container
     const raysGroup = new THREE.Group();
     scene.add(raysGroup);
     raysGroupRef.current = raysGroup;
@@ -178,13 +227,13 @@ export const InteractiveOptics: React.FC = () => {
     // Animation loop
     let animationFrameId: number;
     const animate = () => {
-      if (lensMeshRef.current && retinaMeshRef.current && raysGroupRef.current) {
+      if (lensMeshRef.current && eyeballGroupRef.current && raysGroupRef.current) {
         // Read directly from rotationRef to resolve the stale closure bug!
         lensMeshRef.current.rotation.x = rotationRef.current.x;
         lensMeshRef.current.rotation.y = rotationRef.current.y;
         
-        retinaMeshRef.current.rotation.x = rotationRef.current.x;
-        retinaMeshRef.current.rotation.y = rotationRef.current.y;
+        eyeballGroupRef.current.rotation.x = rotationRef.current.x;
+        eyeballGroupRef.current.rotation.y = rotationRef.current.y;
         
         raysGroupRef.current.rotation.x = rotationRef.current.x;
         raysGroupRef.current.rotation.y = rotationRef.current.y;
@@ -200,8 +249,16 @@ export const InteractiveOptics: React.FC = () => {
       cancelAnimationFrame(animationFrameId);
       geometry.dispose();
       lensMaterial.dispose();
-      retinaGeo.dispose();
-      retinaMat.dispose();
+      rimGeo.dispose();
+      rimMat.dispose();
+      tabGeo.dispose();
+      tabMat.dispose();
+      scleraGeo.dispose();
+      scleraMat.dispose();
+      irisGeo.dispose();
+      irisMat.dispose();
+      pupilGeo.dispose();
+      pupilMat.dispose();
       renderer.dispose();
       resizeObserver.disconnect();
     };
@@ -251,77 +308,100 @@ export const InteractiveOptics: React.FC = () => {
     positionAttr.needsUpdate = true;
     geometry.computeVertexNormals();
 
-    // 2. TRACE 3D LIGHT RAYS
+    // 2. TRACE 3D LIGHT RAYS AS 3D GLOWING CYLINDERS (instead of 1px lines!)
     if (raysGroup) {
+      // Clear old beam meshes
       while (raysGroup.children.length > 0) {
-        const obj = raysGroup.children[0];
+        const obj = raysGroup.children[0] as THREE.Mesh;
         raysGroup.remove(obj);
-        if ((obj as THREE.Line).geometry) (obj as THREE.Line).geometry.dispose();
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) (obj.material as THREE.Material).dispose();
       }
 
       const rayPositions = [
-        { x: -0.8, y: 0.8 },
-        { x: 0.8, y: 0.8 },
+        { x: -0.7, y: 0.7 },
+        { x: 0.7, y: 0.7 },
         { x: 0, y: 0 },
-        { x: -0.8, y: -0.8 },
-        { x: 0.8, y: -0.8 }
+        { x: -0.7, y: -0.7 },
+        { x: 0.7, y: -0.7 }
       ];
 
-      rayPositions.forEach((pos) => {
-        const points: THREE.Vector3[] = [];
-        points.push(new THREE.Vector3(pos.x, pos.y, -4));
-        points.push(new THREE.Vector3(pos.x, pos.y, -0.2));
+      const rayColor = isCorrected ? 0x2dd4bf : 0xf472b6; // Teal for corrected, pink for blurry
 
-        let targetZ = 3;
+      // Helper function to create a 3D cylindrical beam between two points
+      const createCylinderBeam = (p1: THREE.Vector3, p2: THREE.Vector3) => {
+        const direction = new THREE.Vector3().subVectors(p2, p1);
+        const length = direction.length();
+        
+        // Dynamic cylinder geometry matching length
+        const beamGeo = new THREE.CylinderGeometry(0.03, 0.03, length, 8);
+        beamGeo.translate(0, length / 2, 0); // Shift pivot to base
+        beamGeo.rotateX(Math.PI / 2); // Align cylinder axis to Z axis
+        
+        const beamMat = new THREE.MeshBasicMaterial({
+          color: rayColor,
+          transparent: true,
+          opacity: 0.75
+        });
+
+        const beamMesh = new THREE.Mesh(beamGeo, beamMat);
+        beamMesh.position.copy(p1);
+        beamMesh.lookAt(p2);
+        return beamMesh;
+      };
+
+      rayPositions.forEach((pos) => {
+        // Calculate points
+        const pt1 = new THREE.Vector3(pos.x, pos.y, -4);
+        const pt2 = new THREE.Vector3(pos.x, pos.y, -0.2);
+
+        let targetZ = 3.0; // target retina position is Z = 3.0 (where eyeball is)
         let targetX = 0;
         let targetY = 0;
 
         if (isCorrected) {
+          // Perfectly focused on eyeball iris (Z = 2.0 is the front face of eyeball!)
           targetX = 0;
           targetY = 0;
-          targetZ = 3;
+          targetZ = 2.0;
         } else {
+          // Uncorrected focal point calculation
           if (sph === 0) {
             targetX = pos.x;
             targetY = pos.y;
-            targetZ = 3;
+            targetZ = 2.0; // stays parallel
           } else if (sph < 0) {
-            const focalZ = 3 + 2.5 / sph;
-            targetX = pos.x * (1 - 3 / focalZ);
-            targetY = pos.y * (1 - 3 / focalZ);
+            // Myopia: focuses BEFORE eyeball (e.g. Z = 1.0)
+            const focalZ = 2.0 + 2.0 / sph;
+            targetX = pos.x * (1 - 2.0 / focalZ);
+            targetY = pos.y * (1 - 2.0 / focalZ);
+            targetZ = 2.0; // continues to eyeball
           } else {
-            const focalZ = 3 + 2.5 / sph;
-            targetX = pos.x * (1 - 3 / focalZ);
-            targetY = pos.y * (1 - 3 / focalZ);
+            // Hyperopia: focuses BEHIND eyeball (e.g. Z = 4.0)
+            const focalZ = 2.0 + 2.0 / sph;
+            targetX = pos.x * (1 - 2.0 / focalZ);
+            targetY = pos.y * (1 - 2.0 / focalZ);
+            targetZ = 2.0;
           }
 
+          // Apply astigmatism cylinder shift
           if (cyl !== 0) {
-            const astigmatismZ = 3 + 2.0 / cyl;
-            targetX = targetX * (1 - 3 / astigmatismZ);
+            const astigmatismZ = 2.0 + 1.8 / cyl;
+            targetX = targetX * (1 - 2.0 / astigmatismZ);
           }
         }
 
-        points.push(new THREE.Vector3(pos.x, pos.y, 0.2));
-        points.push(new THREE.Vector3(targetX, targetY, targetZ));
+        const pt3 = new THREE.Vector3(pos.x, pos.y, 0.2);
+        const pt4 = new THREE.Vector3(targetX, targetY, targetZ);
 
-        const direction = new THREE.Vector3(targetX, targetY, targetZ)
-          .sub(new THREE.Vector3(pos.x, pos.y, 0.2))
-          .normalize();
-        const extension = direction.multiplyScalar(1.5);
-        const finalPoint = new THREE.Vector3(targetX, targetY, targetZ).add(extension);
-        points.push(finalPoint);
-
-        const rayGeo = new THREE.BufferGeometry().setFromPoints(points);
-        const rayColor = isCorrected ? 0x2dd4bf : 0xf472b6;
-        const rayMat = new THREE.LineBasicMaterial({ 
-          color: rayColor,
-          linewidth: 2, 
-          transparent: true,
-          opacity: 0.8
-        });
+        // Beam 1: Entering light (Parallel from Z = -4 to Z = -0.2)
+        raysGroup.add(createCylinderBeam(pt1, pt2));
         
-        const line = new THREE.Line(rayGeo, rayMat);
-        raysGroup.add(line);
+        // Beam 2: Passing through lens (Z = -0.2 to Z = 0.2)
+        raysGroup.add(createCylinderBeam(pt2, pt3));
+
+        // Beam 3: Exiting/Refracting light (From Z = 0.2 to target retina Z = 2.0)
+        raysGroup.add(createCylinderBeam(pt3, pt4));
       });
     }
 
