@@ -21,16 +21,12 @@ export const Footer: React.FC = () => {
               <Glasses size={22} className="footer-logo-icon" />
               <span>Hira.optics</span>
             </div>
-            <p className="footer-description">
-              {language === 'es'
-                ? 'Salud visual y optometría especializada. Cuidando tus ojos con el mejor asesoramiento, profesionalidad y un trato cercano.'
-                : 'Specialized visual health and optometry. Caring for your eyes with the best advice, professionalism, and a friendly touch.'}
-            </p>
+            <p className="footer-description">{t.footerDesc}</p>
           </div>
 
           {/* Quick Links */}
           <div className="footer-links-col">
-            <h4 className="footer-col-title">{language === 'es' ? 'Secciones' : 'Sections'}</h4>
+            <h4 className="footer-col-title">{t.footerSections}</h4>
             <ul className="footer-links-list">
               <li><a href="#about">{t.navAbout}</a></li>
               <li><a href="#skills">{t.navSkills}</a></li>
@@ -43,11 +39,7 @@ export const Footer: React.FC = () => {
           {/* CV Download Action */}
           <div className="footer-download-col">
             <h4 className="footer-col-title">CV Document</h4>
-            <p className="footer-cv-text">
-              {language === 'es'
-                ? '¿Deseas guardar una copia física de mi curriculum en PDF?'
-                : 'Would you like to keep a physical copy of my CV in PDF format?'}
-            </p>
+            <p className="footer-cv-text">{t.footerCVDesc}</p>
             <a 
               href="/HIRA KHAN ASLAM CV.pdf" 
               download="HIRA KHAN ASLAM CV.pdf"

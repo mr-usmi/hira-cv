@@ -4,13 +4,13 @@ import { Award, Heart, Users, Eye, Sparkles } from 'lucide-react';
 import { WaveDivider } from './WaveDivider';
 
 export const About: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const stats = [
-    { id: 1, icon: <Award size={24} />, value: '4+', label: 'Años Experiencia', labelEn: 'Years Experience' },
-    { id: 2, icon: <Users size={24} />, value: '1K+', label: 'Exámenes Visuales', labelEn: 'Visual Examinations' },
-    { id: 3, icon: <Heart size={24} />, value: '5', label: 'Idiomas Hablados', labelEn: 'Languages Spoken' },
-    { id: 4, icon: <Sparkles size={24} />, value: '100%', label: 'Trato Cercano', labelEn: 'Patient Care' },
+    { id: 1, icon: <Award size={24} />, value: '4+', label: language === 'es' ? 'Años Experiencia' : 'Years Experience' },
+    { id: 2, icon: <Users size={24} />, value: '1K+', label: language === 'es' ? 'Exámenes Visuales' : 'Visual Examinations' },
+    { id: 3, icon: <Heart size={24} />, value: '5', label: language === 'es' ? 'Idiomas Hablados' : 'Languages Spoken' },
+    { id: 4, icon: <Sparkles size={24} />, value: '100%', label: language === 'es' ? 'Trato Cercano' : 'Patient Care' },
   ];
 
   return (
@@ -33,9 +33,7 @@ export const About: React.FC = () => {
                 <div key={stat.id} className="stat-card glass-card">
                   <div className="stat-icon">{stat.icon}</div>
                   <h3 className="stat-value">{stat.value}</h3>
-                  <p className="stat-label">
-                    {t.contactSendBtn.includes('Enviar') ? stat.label : stat.labelEn}
-                  </p>
+                  <p className="stat-label">{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -48,7 +46,7 @@ export const About: React.FC = () => {
               </div>
               <div className="lens-info">
                 <h4>{t.aboutHighlightOptics}</h4>
-                <p>Especialista en adaptar tu mirada al mundo con lentes de contacto y graduación exacta.</p>
+                <p>{t.aboutHighlightText}</p>
               </div>
             </div>
           </div>
@@ -72,19 +70,19 @@ export const About: React.FC = () => {
                 <div className="highlight-item">
                   <div className="highlight-bullet bullet-pink"></div>
                   <div>
-                    <strong>Refracción de Precisión:</strong> Exámenes exhaustivos para compensar miopía, hipermetropía, astigmatismo y presbicia.
+                    <strong>{t.aboutHighlight1Title}:</strong> {t.aboutHighlight1Desc}
                   </div>
                 </div>
                 <div className="highlight-item">
                   <div className="highlight-bullet bullet-teal"></div>
                   <div>
-                    <strong>Taller y Montaje:</strong> Corte, centrado y biselado manual y automático de lentes en monturas de cualquier diseño.
+                    <strong>{t.aboutHighlight2Title}:</strong> {t.aboutHighlight2Desc}
                   </div>
                 </div>
                 <div className="highlight-item">
                   <div className="highlight-bullet bullet-gold"></div>
                   <div>
-                    <strong>Contactología Especializada:</strong> Adaptación de lentes de contacto para todo tipo de ojos y correcciones.
+                    <strong>{t.aboutHighlight3Title}:</strong> {t.aboutHighlight3Desc}
                   </div>
                 </div>
               </div>

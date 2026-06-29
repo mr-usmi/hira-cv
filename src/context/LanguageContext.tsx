@@ -40,13 +40,25 @@ interface Translations {
   
   interactiveTitle: string;
   interactiveSubtitle: string;
+  faceShapePrompt: string;
+  faceRound: string;
+  faceOval: string;
+  faceSquare: string;
+  faceHeart: string;
+  recHeading: string;
   tryonHeading: string;
   tryonSub: string;
-  chartHeading: string;
-  chartSub: string;
-  chartTestBtn: string;
-  chartPass: string;
-  chartFail: string;
+  
+  recRound: string;
+  recOval: string;
+  recSquare: string;
+  recHeart: string;
+  
+  frameNone: string;
+  frameCatEye: string;
+  frameRound: string;
+  frameSquare: string;
+  frameFlower: string;
   
   eduTitle: string;
   eduSubtitle: string;
@@ -61,6 +73,30 @@ interface Translations {
   contactSending: string;
   contactSuccess: string;
   contactError: string;
+  contactIntro: string;
+  contactLocationTitle: string;
+  contactDirectTitle: string;
+  contactLocationText: string;
+  contactMailBtn: string;
+  contactCopyBtn: string;
+  contactCopiedBtn: string;
+  contactCallBtn: string;
+  
+  aboutHighlightText: string;
+  aboutHighlight1Title: string;
+  aboutHighlight1Desc: string;
+  aboutHighlight2Title: string;
+  aboutHighlight2Desc: string;
+  aboutHighlight3Title: string;
+  aboutHighlight3Desc: string;
+  
+  langNativo: string;
+  langBilingue: string;
+  langAvanzado: string;
+  
+  footerDesc: string;
+  footerSections: string;
+  footerCVDesc: string;
   
   jobs: {
     optician: {
@@ -114,60 +150,96 @@ export const translations: Record<Language, Translations> = {
     navAbout: 'Sobre Mí',
     navSkills: 'Especialidades',
     navExperience: 'Experiencia',
-    navInteractive: 'Gabinete Óptico',
+    navInteractive: 'Probador Cuqui',
     navEducation: 'Formación',
     navContact: 'Contacto',
     
-    heroGreeting: '¡Hola! Soy Hira Khan Aslam',
+    heroGreeting: '¡Hola! Soy Hira Khan Aslam ✿',
     heroSubtitle: 'Óptica - Optometrista',
-    heroDescription: 'Apasionada por el cuidado de la salud visual, con más de 4 años de experiencia en refracción, adaptación de lentes de contacto y gestión de taller. Una mente inteligente y entusiasta de la óptica... ¡con un toque alegre y floral!',
-    heroContactBtn: 'Hablemos',
+    heroDescription: 'Apasionada por la salud de tus ojitos, con más de 4 años de experiencia en refracción, lentes de contacto y montaje de gafas. Inteligente, alegre y amante de las flores y las gafas bonitas. ¡Bienvenido a mi rincón cuqui!',
+    heroContactBtn: '¡Hablemos!',
     heroCVBtn: 'Descargar CV',
     
     aboutTitle: 'Sobre Mí',
-    aboutSubtitle: 'Ciencia visual con empatía y una gran sonrisa',
-    aboutText1: 'Soy una óptica-optometrista con 4 años de experiencia en el sector. Me apasiona ayudar a las personas a ver el mundo con total claridad. Para mí, la óptica no se trata solo de graduar lentes; se trata de escuchar, comprender las necesidades de cada paciente y encontrar la montura y el tratamiento perfectos con un trato cercano y alegre.',
-    aboutText2: 'Graduada por la Universitat Politècnica de Catalunya (UPC), me he especializado tanto en la parte clínica (exámenes visuales, detección de patologías oculares iniciales y contactología) como en la parte técnica del taller de montaje de gafas.',
-    aboutText3: 'Creo firmemente que la salud visual mejora la calidad de vida y que un trato humano, empático y profesional marca toda la diferencia.',
-    aboutHighlightOptics: 'Exámenes Visuales y Contactología',
-    aboutHighlightCare: 'Atención al Paciente y Taller',
+    aboutSubtitle: 'Salud visual con mucha empatía, sonrisas y flores',
+    aboutText1: '¡Hola! Soy una óptica-optometrista con 4 años de experiencia. Me fascina ayudar a que las personas vean el mundo con total claridad. Para mí, la óptica es escuchar con dulzura, comprender qué necesita tu mirada y aconsejarte con cariño y alegría.',
+    aboutText2: 'Me gradué en la Universitat Politècnica de Catalunya (UPC) y me he especializado tanto en el gabinete clínico como en el taller de montaje de gafas, cuidando cada detalle.',
+    aboutText3: 'Creo que una mirada feliz alegra el corazón y que un trato humano, empático y súper adorable marca la diferencia.',
+    aboutHighlightOptics: 'Salud Visual',
+    aboutHighlightCare: 'Atención Cuqui',
     
     skillsTitle: 'Especialidades y Habilidades',
-    skillsSubtitle: 'Combinación de destreza clínica, precisión técnica y un toque multicultural.',
+    skillsSubtitle: 'Un toque de ciencia visual, precisión técnica y mucho cariño por los detalles.',
     skillsOptometry: 'Óptica y Optometría',
-    skillsContactology: 'Contactología Avanzada',
-    skillsWorkshop: 'Montaje y Taller de Gafas',
+    skillsContactology: 'Contactología Especializada',
+    skillsWorkshop: 'Montaje y Taller',
     skillsInstruments: 'Instrumentación Clínica',
-    skillsLanguages: 'Multilingüe',
-    skillsSoft: 'Habilidades Personales',
+    skillsLanguages: 'Idiomas',
+    skillsSoft: 'Cualidades Adorables',
     
     expTitle: 'Experiencia Profesional',
-    expSubtitle: 'Mi trayectoria en gabinetes universitarios, talleres de óptica y atención clínica.',
+    expSubtitle: 'Mi dulce camino en gabinetes universitarios, talleres de óptica y atención clínica.',
     expPresent: 'Actualidad',
     
-    interactiveTitle: 'Gabinete Óptico Interactivo',
-    interactiveSubtitle: 'Diviértete probando monturas virtuales o jugando a medir tu agudeza visual.',
-    tryonHeading: 'Probador de Gafas Virtual',
-    tryonSub: 'Prueba diferentes estilos de monturas y encuentra las gafas ideales para Hira.',
-    chartHeading: 'Test de Visión Interactivo',
-    chartSub: 'Encuentra qué letra se muestra en la tabla de Snellen. ¡Haz clic en las lentes para enfocar la visión borrosa!',
-    chartTestBtn: 'Graduar Visión',
-    chartPass: '¡Excelente visión! Agudeza visual 1.0 (20/20).',
-    chartFail: 'La visión está borrosa. Aplica la lente correctora para enfocar.',
+    interactiveTitle: 'Estilo de Gafas Cutiepie 👓',
+    interactiveSubtitle: '¿Quieres saber qué montura te favorece más? Elige tu tipo de rostro y pruébaselas a Hira.',
+    faceShapePrompt: '¿Cómo es la forma de tu rostro?',
+    faceRound: '🌸 Redondo',
+    faceOval: '🌟 Ovalado',
+    faceSquare: '🎀 Cuadrado',
+    faceHeart: '💖 Corazón',
+    recHeading: 'Recomendación Cuqui:',
+    tryonHeading: 'Probador de Gafas',
+    tryonSub: '¡Mira qué bien le sientan las monturas a Hira!',
+    
+    recRound: '¡Las monturas Cat-Eye rosa te darán un toque súper chic y alegre! Rompen las líneas redondeadas de forma muy dulce y estilizan tus ojitos.',
+    recOval: '¡Tienes suerte, te queda bien casi todo! Unas monturas Hipster Negro te darán un aire intelectual, adorable y con mucha personalidad.',
+    recSquare: '¡Las monturas Retro Dorado suavizan tus facciones cuadradas con un brillo mágico y vintage súper cuqui!',
+    recHeart: '¡Prueba las monturas Flor Alegre! Equilibran la parte superior del rostro con pura diversión, color y pétalos rosas.',
+    
+    frameNone: 'Sin Gafas',
+    frameCatEye: 'Cat-Eye Rosa 🌸',
+    frameRound: 'Retro Dorado 🌟',
+    frameSquare: 'Hipster Negro 🎀',
+    frameFlower: 'Flor Alegre 💖',
     
     eduTitle: 'Educación y Formación',
-    eduSubtitle: 'Mi formación académica en la UPC y especializaciones técnicas.',
+    eduSubtitle: 'Mi formación en la UPC y mis especialidades más queridas.',
     
     contactTitle: 'Contacto',
-    contactSubtitle: '¿Buscas una profesional de la visión o quieres colaborar? Escríbeme.',
+    contactSubtitle: '¿Buscas una profesional de la visión o quieres saludarme? Escríbeme.',
     contactName: 'Nombre Completo',
     contactEmail: 'Correo Electrónico',
     contactSubject: 'Asunto',
     contactMessage: 'Mensaje',
     contactSendBtn: 'Enviar Mensaje',
     contactSending: 'Enviando...',
-    contactSuccess: '¡Mensaje enviado con éxito! Me pondré en contacto contigo muy pronto.',
+    contactSuccess: '¡Mensaje enviado con éxito! Te responderé con una gran sonrisa muy pronto.',
     contactError: 'Ocurrió un error. Por favor, inténtalo de nuevo.',
+    contactIntro: '¿Buscas una óptica-optometrista comprometida, entusiasta y con experiencia clínica para tu equipo? No dudes en contactarme. ¡Estoy disponible para empezar ya!',
+    contactLocationTitle: 'Ubicación',
+    contactDirectTitle: 'Contacto Directo',
+    contactLocationText: 'Barcelona, Cataluña, España',
+    contactMailBtn: 'Enviar Correo',
+    contactCopyBtn: 'Copiar Email',
+    contactCopiedBtn: '¡Copiado!',
+    contactCallBtn: 'Llamar',
+    
+    aboutHighlightText: 'Especialista en refracción clínica, lentes de contacto y asesoramiento de monturas personalizadas.',
+    aboutHighlight1Title: 'Refracción de Precisión',
+    aboutHighlight1Desc: 'Exámenes detallados para compensar miopía, hipermetropía, astigmatismo y presbicia con mucho mimo.',
+    aboutHighlight2Title: 'Taller y Montaje',
+    aboutHighlight2Desc: 'Corte, biselado y montaje de lentes en todo tipo de monturas en el laboratorio clínico.',
+    aboutHighlight3Title: 'Contactología Feliz',
+    aboutHighlight3Desc: 'Adaptación personalizada de lentes de contacto para que sientas tus ojos cómodos y frescos.',
+    
+    langNativo: 'Nativo',
+    langBilingue: 'Bilingüe',
+    langAvanzado: 'Avanzado',
+    
+    footerDesc: 'Salud visual y optometría especializada. Cuidando tus ojitos con el mejor asesoramiento, profesionalidad y un trato súper cercano y alegre.',
+    footerSections: 'Secciones',
+    footerCVDesc: '¿Quieres descargar mi curriculum en formato PDF?',
     
     jobs: {
       optician: {
@@ -242,60 +314,96 @@ export const translations: Record<Language, Translations> = {
     navAbout: 'About Me',
     navSkills: 'Specialties',
     navExperience: 'Experience',
-    navInteractive: 'Optometric Lab',
+    navInteractive: 'Cute Try-On',
     navEducation: 'Education',
     navContact: 'Contact',
     
-    heroGreeting: 'Hi! I\'m Hira Khan Aslam',
+    heroGreeting: 'Hi! I\'m Hira Khan Aslam ✿',
     heroSubtitle: 'Optician - Optometrist',
-    heroDescription: 'Passionate about visual health care, with over 4 years of experience in refraction, contact lens fitting, and lab workshop management. An intelligent optics mind... with a cheerful and floral touch!',
-    heroContactBtn: 'Let\'s Talk',
+    heroDescription: 'Passionate about your eye health, with over 4 years of experience in refraction, contact lenses, and lens mounting. Smart, cheerful, and in love with flowers and pretty glasses. Welcome to my cute corner!',
+    heroContactBtn: 'Let\'s Talk!',
     heroCVBtn: 'Download CV',
     
     aboutTitle: 'About Me',
-    aboutSubtitle: 'Visual science with empathy and a big smile',
-    aboutText1: 'I am an optician-optometrist with 4 years of professional experience. I love helping people see the world with total clarity. For me, optics is not just about prescribing lenses; it is about listening, understanding each patient\'s unique needs, and finding the perfect frames and treatment with a friendly and warm approach.',
-    aboutText2: 'Graduated from the Polytechnic University of Catalonia (UPC), I have specialized in both clinical care (visual exams, early eye pathology detection, and contactology) and the technical side of the optical assembly workshop.',
-    aboutText3: 'I strongly believe that visual health enhances quality of life, and that a human, empathetic, and professional touch makes all the difference.',
-    aboutHighlightOptics: 'Visual Exams & Contactology',
-    aboutHighlightCare: 'Patient Care & Lab Workshop',
+    aboutSubtitle: 'Visual health with empathy, smiles, and flowers',
+    aboutText1: 'Hi there! I am an optician-optometrist with 4 years of experience. I love helping people see the world with total clarity. For me, optics is about listening gently, understanding what your eyes need, and advising you with care and joy.',
+    aboutText2: 'I graduated from the Polytechnic University of Catalonia (UPC) and specialized in both the clinical office and the lens mounting workshop, taking care of every little detail.',
+    aboutText3: 'I believe a happy look brings joy to the heart, and that a human, empathetic, and super adorable touch makes all the difference.',
+    aboutHighlightOptics: 'Visual Health',
+    aboutHighlightCare: 'Cute Care',
     
     skillsTitle: 'Specialties & Skills',
-    skillsSubtitle: 'A blend of clinical accuracy, technical precision, and a multicultural background.',
+    skillsSubtitle: 'A touch of visual science, technical precision, and a lot of love for details.',
     skillsOptometry: 'Optics & Optometry',
-    skillsContactology: 'Advanced Contactology',
-    skillsWorkshop: 'Lens Fitting & Optical Workshop',
-    skillsInstruments: 'Clinical Instrumentation',
-    skillsLanguages: 'Multilingual',
-    skillsSoft: 'Soft Skills',
+    skillsContactology: 'Specialized Contactology',
+    skillsWorkshop: 'Assembly & Workshop',
+    skillsInstruments: 'Clinical Instruments',
+    skillsLanguages: 'Languages',
+    skillsSoft: 'Adorable Qualities',
     
     expTitle: 'Professional Experience',
-    expSubtitle: 'My professional path in university eye clinics, optical workshops, and clinical care.',
+    expSubtitle: 'My sweet journey in university clinics, optical workshops, and clinical care.',
     expPresent: 'Present',
     
-    interactiveTitle: 'Interactive Optical Lab',
-    interactiveSubtitle: 'Have fun trying on virtual glasses frames or testing your visual acuity.',
-    tryonHeading: 'Virtual Glasses Try-On',
-    tryonSub: 'Try on different styles of frames and find the perfect glasses for Hira.',
-    chartHeading: 'Interactive Vision Test',
-    chartSub: 'Identify the letter shown on the Snellen Chart. Click the optical lenses to focus the blurry image!',
-    chartTestBtn: 'Adjust Vision',
-    chartPass: 'Excellent vision! Visual acuity 20/20 (1.0).',
-    chartFail: 'Vision is blurry. Apply the corrective lens to focus the letters.',
+    interactiveTitle: 'Cutiepie Glasses Finder 👓',
+    interactiveSubtitle: 'Want to know which frames fit you best? Choose your face shape and try them on Hira!',
+    faceShapePrompt: 'What is your face shape?',
+    faceRound: '🌸 Round',
+    faceOval: '🌟 Oval',
+    faceSquare: '🎀 Square',
+    faceHeart: '💖 Heart',
+    recHeading: 'Cute Recommendation:',
+    tryonHeading: 'Glasses Try-On',
+    tryonSub: 'Look how pretty Hira looks in these frames!',
+    
+    recRound: 'Pink Cat-Eye frames will give you a super chic and cheerful touch! They softly break up round lines and make your eyes look beautiful.',
+    recOval: 'You are in luck, almost everything fits you! Black Hipster frames will give you an intellectual, adorable look with lots of personality.',
+    recSquare: 'Retro Gold frames soften your square features with a magical, vintage, and super cute glow!',
+    recHeart: 'Try the Floral Fun frames! They balance the upper part of your face with pure fun, color, and pink petals.',
+    
+    frameNone: 'No Glasses',
+    frameCatEye: 'Pink Cat-Eye 🌸',
+    frameRound: 'Retro Gold 🌟',
+    frameSquare: 'Black Hipster 🎀',
+    frameFlower: 'Floral Fun 💖',
     
     eduTitle: 'Education & Training',
-    eduSubtitle: 'My academic degrees from UPC and technical vocational training.',
+    eduSubtitle: 'My training at UPC and my most beloved specialties.',
     
     contactTitle: 'Contact Me',
-    contactSubtitle: 'Looking for a vision specialist or want to collaborate? Drop me a message.',
+    contactSubtitle: 'Looking for a vision professional or want to say hello? Write to me.',
     contactName: 'Full Name',
     contactEmail: 'Email Address',
     contactSubject: 'Subject',
     contactMessage: 'Message',
     contactSendBtn: 'Send Message',
     contactSending: 'Sending...',
-    contactSuccess: 'Message sent successfully! I will get back to you very soon.',
+    contactSuccess: 'Message sent successfully! I will reply to you with a big smile very soon.',
     contactError: 'An error occurred. Please try again.',
+    contactIntro: 'Looking for a committed, enthusiastic optician-optometrist with clinical experience for your team? Feel free to reach out. I am available to start right away!',
+    contactLocationTitle: 'Location',
+    contactDirectTitle: 'Direct Contact',
+    contactLocationText: 'Barcelona, Catalonia, Spain',
+    contactMailBtn: 'Send Email',
+    contactCopyBtn: 'Copy Email',
+    contactCopiedBtn: 'Copied!',
+    contactCallBtn: 'Call',
+    
+    aboutHighlightText: 'Specialist in clinical refraction, contact lenses, and personalized frame styling advice.',
+    aboutHighlight1Title: 'Precision Refraction',
+    aboutHighlight1Desc: 'Detailed examinations to compensate for nearsightedness, farsightedness, astigmatism, and presbyopia with great care.',
+    aboutHighlight2Title: 'Workshop & Assembly',
+    aboutHighlight2Desc: 'Cutting, edging, and mounting lenses on all kinds of frames in the clinical laboratory.',
+    aboutHighlight3Title: 'Happy Contactology',
+    aboutHighlight3Desc: 'Custom fit of contact lenses so that your eyes feel comfortable, moist, and fresh.',
+    
+    langNativo: 'Native',
+    langBilingue: 'Bilingual',
+    langAvanzado: 'Advanced',
+    
+    footerDesc: 'Specialized visual health and optometry. Caring for your eyes with the best advice, professionalism, and a super friendly and cheerful touch.',
+    footerSections: 'Sections',
+    footerCVDesc: 'Do you want to download my CV in PDF format?',
     
     jobs: {
       optician: {

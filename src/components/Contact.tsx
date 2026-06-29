@@ -27,30 +27,20 @@ export const Contact: React.FC = () => {
       <div className="container contact-container">
         <div className="section-header">
           <h2>{t.contactTitle}</h2>
-          <p>
-            {language === 'es' 
-              ? 'Conectemos directamente. Escríbeme un correo, llámame por teléfono o copia mis datos.' 
-              : 'Let\'s connect directly. Send me an email, call me, or copy my contact details.'}
-          </p>
+          <p>{t.contactSubtitle}</p>
         </div>
 
         <div className="contact-content grid-2">
           {/* Left Side: General Info */}
           <div className="contact-info-panel">
-            <h3 className="info-title">
-              {language === 'es' ? 'Contacto Directo' : 'Direct Contact'}
-            </h3>
-            <p className="info-intro">
-              {language === 'es' 
-                ? '¿Buscas una óptica-optometrista comprometida, entusiasta y con experiencia clínica para tu equipo o proyecto? No dudes en contactarme. Estoy disponible para comenzar de inmediato.' 
-                : 'Looking for a committed, enthusiastic optician-optometrist with clinical experience for your team or project? Feel free to reach out. I am available to start immediately.'}
-            </p>
+            <h3 className="info-title">{t.contactDirectTitle}</h3>
+            <p className="info-intro">{t.contactIntro}</p>
 
             <div className="location-card glass-card">
               <span className="location-icon-wrapper"><MapPin size={22} /></span>
               <div className="location-details">
-                <h4>{language === 'es' ? 'Ubicación' : 'Location'}</h4>
-                <p className="location-text">Barcelona, Cataluña, España</p>
+                <h4>{t.contactLocationTitle}</h4>
+                <p className="location-text">{t.contactLocationText}</p>
               </div>
             </div>
           </div>
@@ -72,20 +62,20 @@ export const Contact: React.FC = () => {
                   href="mailto:hira.anwar40@gmail.com?subject=Contacto%20Portfolio" 
                   className="btn btn-primary method-btn"
                 >
-                  {language === 'es' ? 'Enviar Correo' : 'Send Email'} <ExternalLink size={16} />
+                  {t.contactMailBtn} <ExternalLink size={16} />
                 </a>
                 <button 
                   onClick={handleCopyEmail} 
                   className="btn btn-secondary method-btn copy-btn"
-                  title={language === 'es' ? 'Copiar al portapapeles' : 'Copy to clipboard'}
+                  title={t.contactCopyBtn}
                 >
                   {copiedEmail ? (
                     <>
-                      <Check size={16} className="text-success-icon" /> {language === 'es' ? 'Copiado!' : 'Copied!'}
+                      <Check size={16} className="text-success-icon" /> {t.contactCopiedBtn}
                     </>
                   ) : (
                     <>
-                      <Copy size={16} /> {language === 'es' ? 'Copiar Email' : 'Copy Email'}
+                      <Copy size={16} /> {t.contactCopyBtn}
                     </>
                   )}
                 </button>
@@ -107,16 +97,16 @@ export const Contact: React.FC = () => {
                   href="tel:631201822" 
                   className="btn btn-primary method-btn phone-btn-gradient"
                 >
-                  {language === 'es' ? 'Llamar' : 'Call'} <ExternalLink size={16} />
+                  {t.contactCallBtn} <ExternalLink size={16} />
                 </a>
                 <button 
                   onClick={handleCopyPhone} 
                   className="btn btn-secondary method-btn copy-btn"
-                  title={language === 'es' ? 'Copiar al portapapeles' : 'Copy to clipboard'}
+                  title={t.contactCopyBtn}
                 >
                   {copiedPhone ? (
                     <>
-                      <Check size={16} className="text-success-icon" /> {language === 'es' ? 'Copiado!' : 'Copied!'}
+                      <Check size={16} className="text-success-icon" /> {t.contactCopiedBtn}
                     </>
                   ) : (
                     <>

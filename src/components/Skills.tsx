@@ -47,28 +47,27 @@ export const Skills: React.FC = () => {
       title: t.skillsLanguages,
       icon: <Languages size={24} />,
       color: 'var(--accent-pink)',
-      // Display languages with levels/labels
       customDisplay: (
         <div className="languages-display-grid">
           <div className="lang-item">
             <span className="lang-name">Castellano / Español</span>
-            <span className="badge lang-badge badge-pink">Nativo</span>
+            <span className="badge lang-badge badge-pink">{t.langNativo}</span>
           </div>
           <div className="lang-item">
             <span className="lang-name">Catalán</span>
-            <span className="badge lang-badge badge-teal">Bilingüe</span>
+            <span className="badge lang-badge badge-teal">{t.langBilingue}</span>
           </div>
           <div className="lang-item">
             <span className="lang-name">Urdu</span>
-            <span className="badge lang-badge badge-gold">Bilingüe</span>
+            <span className="badge lang-badge badge-gold">{t.langBilingue}</span>
           </div>
           <div className="lang-item">
             <span className="lang-name">Punjabi</span>
-            <span className="badge lang-badge badge-peach">Bilingüe</span>
+            <span className="badge lang-badge badge-peach">{t.langBilingue}</span>
           </div>
           <div className="lang-item">
             <span className="lang-name">Inglés</span>
-            <span className="badge lang-badge badge-pink">Avanzado</span>
+            <span className="badge lang-badge badge-pink">{t.langAvanzado}</span>
           </div>
         </div>
       )
