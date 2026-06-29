@@ -1,12 +1,332 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Eye, Sparkles, AlertCircle, Sparkle } from 'lucide-react';
+import { Eye, Sparkles, AlertCircle, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import * as THREE from 'three';
 
 export const InteractiveOptics: React.FC = () => {
   const { t } = useLanguage();
   const [sph, setSph] = useState<number>(0);
   const [cyl, setCyl] = useState<number>(0);
   const [isCorrected, setIsCorrected] = useState<boolean>(true);
+  
+  // 3D Scene Refs
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  
+  // Mesh Refs
+  const lensGeometryRef = useRef<THREE.CylinderGeometry | null>(null);
+  const lensMeshRef = useRef<THREE.Mesh | null>(null);
+  const originalPositionsRef = useRef<Float32Array | null>(null);
+  const raysGroupRef = useRef<THREE.Group | null>(null);
+  
+  // Rotation / Drag Interaction State
+  const [rotation, setRotation] = useState({ x: 0.2, y: -0.6 });
+  const isDragging = useRef(false);
+  const previousMousePosition = useRef({ x: 0, y: 0 });
+
+  // Handle Dragging / Rotation
+  const handleMouseDown = (e: React.MouseEvent) => {
+    isDragging.current = true;
+    previousMousePosition.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current) return;
+    const deltaX = e.clientX - previousMousePosition.current.x;
+    const deltaY = e.clientY - previousMousePosition.current.y;
+    
+    setRotation(prev => ({
+      x: prev.x + deltaY * 0.01,
+      y: prev.y + deltaX * 0.01
+    }));
+    
+    previousMousePosition.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+  };
+
+  // Touch Support
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      isDragging.current = true;
+      previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging.current || e.touches.length !== 1) return;
+    const deltaX = e.touches[0].clientX - previousMousePosition.current.x;
+    const deltaY = e.touches[0].clientY - previousMousePosition.current.y;
+    
+    setRotation(prev => ({
+      x: prev.x + deltaY * 0.01,
+      y: prev.y + deltaX * 0.01
+    }));
+    
+    previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
+
+  // Preset Views
+  const setView = (view: 'profile' | 'front' | 'angled') => {
+    if (view === 'profile') {
+      setRotation({ x: 0, y: Math.PI / 2 });
+    } else if (view === 'front') {
+      setRotation({ x: 0, y: 0 });
+    } else {
+      setRotation({ x: 0.2, y: -0.6 });
+    }
+  };
+
+  // Initialize Three.js Scene
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    // 1. Scene setup
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xfffbf7); // Matches var(--bg-primary) sunny cream
+    sceneRef.current = scene;
+
+    // 2. Camera setup
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(0, 0, 8);
+    cameraRef.current = camera;
+
+    // 3. Renderer setup
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvasRef.current,
+      antialias: true,
+      alpha: true
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    rendererRef.current = renderer;
+
+    // 4. Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight1.position.set(5, 5, 5);
+    scene.add(dirLight1);
+
+    const dirLight2 = new THREE.DirectionalLight(0xfc819e, 0.3); // Pink warm light
+    dirLight2.position.set(-5, -5, -5);
+    scene.add(dirLight2);
+
+    // 5. Geometry & Lens Mesh creation
+    const geometry = new THREE.CylinderGeometry(1.8, 1.8, 0.4, 64, 8);
+    geometry.rotateX(Math.PI / 2);
+    lensGeometryRef.current = geometry;
+
+    // Cache original vertex positions for deformation calculations
+    const positionAttr = geometry.getAttribute('position');
+    originalPositionsRef.current = positionAttr.array.slice() as Float32Array;
+
+    // Material with high-end glass physics
+    const lensMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xe0f2fe, // Soft blue-teal glass tint
+      transmission: 0.9,
+      opacity: 1,
+      transparent: true,
+      roughness: 0.05,
+      metalness: 0.1,
+      ior: 1.52, // Glass Refractive Index
+      thickness: 1.5,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1,
+      side: THREE.DoubleSide
+    });
+
+    const lensMesh = new THREE.Mesh(geometry, lensMaterial);
+    scene.add(lensMesh);
+    lensMeshRef.current = lensMesh;
+
+    // 6. Glowing Screen / Eye Target
+    const retinaGeo = new THREE.RingGeometry(1.4, 1.5, 32);
+    const retinaMat = new THREE.MeshBasicMaterial({ color: 0x0d9488, side: THREE.DoubleSide, opacity: 0.4, transparent: true });
+    const retinaMesh = new THREE.Mesh(retinaGeo, retinaMat);
+    retinaMesh.position.set(0, 0, 3); // Position on the right side
+    scene.add(retinaMesh);
+
+    // 7. Ray Group Container
+    const raysGroup = new THREE.Group();
+    scene.add(raysGroup);
+    raysGroupRef.current = raysGroup;
+
+    // Handle full responsiveness using ResizeObserver
+    const container = canvasRef.current.parentElement;
+    let initialWidth = 300;
+    if (container) {
+      initialWidth = Math.min(container.clientWidth - 32, 350);
+      renderer.setSize(initialWidth, initialWidth);
+    }
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (!entries || entries.length === 0) return;
+      const entry = entries[0];
+      const newWidth = Math.min(entry.contentRect.width - 32, 350);
+      if (newWidth > 100) {
+        renderer.setSize(newWidth, newWidth);
+      }
+    });
+
+    if (container) {
+      resizeObserver.observe(container);
+    }
+
+    // Animation loop
+    let animationFrameId: number;
+    const animate = () => {
+      if (lensMeshRef.current) {
+        lensMeshRef.current.rotation.x = rotation.x;
+        lensMeshRef.current.rotation.y = rotation.y;
+        
+        retinaMesh.rotation.x = rotation.x;
+        retinaMesh.rotation.y = rotation.y;
+        
+        raysGroup.rotation.x = rotation.x;
+        raysGroup.rotation.y = rotation.y;
+      }
+
+      renderer.render(scene, camera);
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    animate();
+
+    // Cleanup
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      geometry.dispose();
+      lensMaterial.dispose();
+      retinaGeo.dispose();
+      retinaMat.dispose();
+      renderer.dispose();
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  // Update Scene when Theme changes
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (scene) {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      scene.background = new THREE.Color(isDark ? 0x181124 : 0xfffbf7);
+    }
+  }, [sph, cyl, isCorrected]);
+
+  // Render 3D Rays and deform lens
+  useEffect(() => {
+    const geometry = lensGeometryRef.current;
+    const originalPositions = originalPositionsRef.current;
+    const raysGroup = raysGroupRef.current;
+
+    if (!geometry || !originalPositions) return;
+
+    // 1. DEFORM LENS GEOMETRY
+    const positionAttr = geometry.getAttribute('position');
+    const positions = positionAttr.array as Float32Array;
+    
+    const sphFactor = sph * 0.04;
+    const cylFactor = cyl * 0.04;
+
+    for (let i = 0; i < positions.length; i += 3) {
+      const x = originalPositions[i];
+      const y = originalPositions[i + 1];
+      const z = originalPositions[i + 2];
+
+      const r2 = x * x + y * y;
+
+      let newZ = z;
+      if (z > 0.01) {
+        newZ = z + (2.0 - r2 * 0.4) * sphFactor + (2.0 - x * x * 0.5) * cylFactor;
+      } else if (z < -0.01) {
+        newZ = z - (2.0 - r2 * 0.4) * sphFactor - (2.0 - x * x * 0.5) * cylFactor;
+      }
+
+      positions[i + 2] = newZ;
+    }
+
+    positionAttr.needsUpdate = true;
+    geometry.computeVertexNormals();
+
+    // 2. TRACE 3D LIGHT RAYS
+    if (raysGroup) {
+      while (raysGroup.children.length > 0) {
+        const obj = raysGroup.children[0];
+        raysGroup.remove(obj);
+        if ((obj as THREE.Line).geometry) (obj as THREE.Line).geometry.dispose();
+      }
+
+      const rayPositions = [
+        { x: -0.8, y: 0.8 },
+        { x: 0.8, y: 0.8 },
+        { x: 0, y: 0 },
+        { x: -0.8, y: -0.8 },
+        { x: 0.8, y: -0.8 }
+      ];
+
+      rayPositions.forEach((pos) => {
+        const points: THREE.Vector3[] = [];
+        points.push(new THREE.Vector3(pos.x, pos.y, -4));
+        points.push(new THREE.Vector3(pos.x, pos.y, -0.2));
+
+        let targetZ = 3;
+        let targetX = 0;
+        let targetY = 0;
+
+        if (isCorrected) {
+          targetX = 0;
+          targetY = 0;
+          targetZ = 3;
+        } else {
+          if (sph === 0) {
+            targetX = pos.x;
+            targetY = pos.y;
+            targetZ = 3;
+          } else if (sph < 0) {
+            const focalZ = 3 + 2.5 / sph;
+            targetX = pos.x * (1 - 3 / focalZ);
+            targetY = pos.y * (1 - 3 / focalZ);
+          } else {
+            const focalZ = 3 + 2.5 / sph;
+            targetX = pos.x * (1 - 3 / focalZ);
+            targetY = pos.y * (1 - 3 / focalZ);
+          }
+
+          if (cyl !== 0) {
+            const astigmatismZ = 3 + 2.0 / cyl;
+            targetX = targetX * (1 - 3 / astigmatismZ);
+          }
+        }
+
+        points.push(new THREE.Vector3(pos.x, pos.y, 0.2));
+        points.push(new THREE.Vector3(targetX, targetY, targetZ));
+
+        const direction = new THREE.Vector3(targetX, targetY, targetZ)
+          .sub(new THREE.Vector3(pos.x, pos.y, 0.2))
+          .normalize();
+        const extension = direction.multiplyScalar(1.5);
+        const finalPoint = new THREE.Vector3(targetX, targetY, targetZ).add(extension);
+        points.push(finalPoint);
+
+        const rayGeo = new THREE.BufferGeometry().setFromPoints(points);
+        const rayColor = isCorrected ? 0x2dd4bf : 0xf472b6;
+        const rayMat = new THREE.LineBasicMaterial({ 
+          color: rayColor,
+          linewidth: 2, 
+          transparent: true,
+          opacity: 0.8
+        });
+        
+        const line = new THREE.Line(rayGeo, rayMat);
+        raysGroup.add(line);
+      });
+    }
+
+  }, [sph, cyl, isCorrected]);
 
   // Formatted string helper
   const formatValue = (val: number) => {
@@ -14,19 +334,15 @@ export const InteractiveOptics: React.FC = () => {
     return (val > 0 ? '+' : '') + val.toFixed(2);
   };
 
-  // Determine simulated blur level (CSS blur px)
   const getBlurValue = () => {
     if (isCorrected) return 0;
     
-    // Calculate blur based on absolute values of SPH and CYL
     const totalAmetropia = Math.abs(sph) + Math.abs(cyl) * 0.8;
     if (totalAmetropia === 0) return 0;
     
-    // Scale blur between 1px and 12px
     return Math.min(12, 1 + totalAmetropia * 1.8);
   };
 
-  // Check if we need thinning
   const needsThinning = Math.abs(sph) > 3.00 || Math.abs(cyl) > 2.00;
 
   return (
@@ -44,7 +360,7 @@ export const InteractiveOptics: React.FC = () => {
           {/* Left Panel: Sliders & Controls */}
           <div className="control-panel glass-card">
             <h3 className="interactive-card-title">
-              <Sparkle size={20} className="card-title-icon pink-color" />
+              <Eye size={22} className="card-title-icon pink-color" />
               {t.prescriptionDecoderTitle}
             </h3>
             <p className="interactive-card-sub">{t.prescriptionDecoderSubtitle}</p>
@@ -55,7 +371,7 @@ export const InteractiveOptics: React.FC = () => {
                 <div className="slider-header">
                   <label className="slider-label">{t.sphLabel}</label>
                   <span className="slider-value-badge" style={{ backgroundColor: sph === 0 ? 'var(--text-muted)' : sph > 0 ? 'var(--accent-peach)' : 'var(--accent-pink)' }}>
-                    {formatValue(sph)} Dioptrías
+                    {formatValue(sph)} D
                   </span>
                 </div>
                 <input
@@ -75,7 +391,7 @@ export const InteractiveOptics: React.FC = () => {
                 <div className="slider-header">
                   <label className="slider-label">{t.cylLabel}</label>
                   <span className="slider-value-badge" style={{ backgroundColor: cyl === 0 ? 'var(--text-muted)' : 'var(--accent-teal)' }}>
-                    {formatValue(cyl)} Dioptrías
+                    {formatValue(cyl)} D
                   </span>
                 </div>
                 <input
@@ -91,9 +407,9 @@ export const InteractiveOptics: React.FC = () => {
               </div>
             </div>
 
-            {/* Simulated Toggle */}
+            {/* Toggle Switch */}
             <div className="toggle-container">
-              <span className="toggle-label">{t.simulateVision}</span>
+              <span className="toggle-label">{t.applyCorrection}</span>
               <button 
                 onClick={() => setIsCorrected(!isCorrected)} 
                 className={`custom-toggle-btn ${isCorrected ? 'active-corrected' : 'active-blurry'}`}
@@ -104,45 +420,69 @@ export const InteractiveOptics: React.FC = () => {
                 </span>
               </button>
             </div>
+            
+            {/* Blurry Vision Text Simulation */}
+            <div className="text-blur-simulation-box">
+              <p className="sim-title-text">{isCorrected ? t.viewCorrectedText : t.viewBlurryText}:</p>
+              <div className="simulation-screen">
+                <p 
+                  className="sim-blurred-text"
+                  style={{ filter: `blur(${getBlurValue()}px)`, transition: 'filter 0.3s ease' }}
+                >
+                  {t.aboutHighlightText}
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* Right Panel: Translation Output & Simulated Vision Preview */}
+          {/* Right Panel: 3D Refraction Lab & Recommendations */}
           <div className="result-panel glass-card">
-            <h3 className="interactive-card-title">
-              <Eye size={22} className="card-title-icon teal-color" />
-              {isCorrected ? t.viewCorrectedText : t.viewBlurryText}
-            </h3>
-
-            {/* Simulated vision screen */}
-            <div className="vision-screen-wrapper">
-              <div 
-                className="vision-scene"
-                style={{ filter: `blur(${getBlurValue()}px)`, transition: 'filter 0.3s ease' }}
-              >
-                <div className="vision-content">
-                  <p className="vision-large-text">HIRA KHAN</p>
-                  <p className="vision-medium-text">Óptica Optometrista</p>
-                  <p className="vision-small-text">Cuidando de tu salud visual con mucho amor ✿</p>
-                </div>
+            <div className="three-lab-header">
+              <h3 className="interactive-card-title">
+                <Sparkles size={22} className="card-title-icon teal-color" />
+                3D Refraction Lab
+              </h3>
+              
+              <div className="view-presets">
+                <button onClick={() => setView('angled')} className="preset-btn" title="Angled View"><RotateCcw size={14} /></button>
+                <button onClick={() => setView('profile')} className="preset-btn" title="Side Profile"><ZoomIn size={14} /></button>
+                <button onClick={() => setView('front')} className="preset-btn" title="Front View"><ZoomOut size={14} /></button>
               </div>
             </div>
 
-            {/* Translation Output Details */}
+            {/* 3D Canvas Box */}
+            <div className="canvas-wrapper-container">
+              <canvas
+                ref={canvasRef}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleMouseUp}
+                className="three-canvas"
+              />
+              <div className="drag-hint">
+                <span>Drag to Rotate Lens ⟳</span>
+              </div>
+            </div>
+
+            {/* Prescription Analysis Output */}
             <div className="prescription-analysis">
               {sph === 0 && cyl === 0 ? (
                 <div className="analysis-empty">
                   <AlertCircle size={20} className="empty-icon" />
-                  <p><strong>{t.normalVisionTitle}:</strong> ¡Felicidades! Tienes una visión perfecta y no necesitas corrección esférica o astigmática.</p>
+                  <p><strong>{t.normalVisionTitle}:</strong> Tienes una visión emétrope. Tu lente es plana y los rayos convergen perfectamente en la retina.</p>
                 </div>
               ) : (
                 <div className="analysis-details">
-                  {/* Sphere details */}
                   {sph !== 0 && (
                     <div className="analysis-item">
                       <div className="analysis-bullet" style={{ backgroundColor: sph > 0 ? 'var(--accent-peach)' : 'var(--accent-pink)' }}></div>
                       <div className="analysis-text-wrapper">
                         <span className="analysis-title">
-                          {sph > 0 ? t.hyperopiaTitle : t.myopiaTitle} ({formatValue(sph)} SPH):
+                          {sph > 0 ? t.hyperopiaTitle : t.myopiaTitle} ({formatValue(sph)} SPH)
                         </span>
                         <p className="analysis-desc">
                           {sph > 0 ? t.sphExplainPos : t.sphExplainNeg}
@@ -151,13 +491,12 @@ export const InteractiveOptics: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Cylinder details */}
                   {cyl !== 0 && (
                     <div className="analysis-item">
                       <div className="analysis-bullet" style={{ backgroundColor: 'var(--accent-teal)' }}></div>
                       <div className="analysis-text-wrapper">
                         <span className="analysis-title">
-                          {t.astigmatismTitle} ({formatValue(cyl)} CYL):
+                          {t.astigmatismTitle} ({formatValue(cyl)} CYL)
                         </span>
                         <p className="analysis-desc">{t.cylExplain}</p>
                       </div>
@@ -221,7 +560,7 @@ export const InteractiveOptics: React.FC = () => {
           text-align: left;
         }
 
-        /* Control Panel Sliders */
+        /* Control Panel */
         .control-panel {
           padding: 2.25rem;
           background: var(--bg-secondary);
@@ -233,14 +572,14 @@ export const InteractiveOptics: React.FC = () => {
         .sliders-container {
           display: flex;
           flex-direction: column;
-          gap: 2rem;
-          margin-bottom: 2.5rem;
+          gap: 1.5rem;
+          margin-bottom: 2rem;
         }
 
         .slider-group {
           display: flex;
           flex-direction: column;
-          gap: 0.6rem;
+          gap: 0.4rem;
           text-align: left;
         }
 
@@ -297,22 +636,14 @@ export const InteractiveOptics: React.FC = () => {
           line-height: 1.4;
         }
 
-        /* Custom Toggle Switch */
+        /* Toggle Button */
         .toggle-container {
           display: flex;
-          flex-direction: column;
+          justify-content: space-between;
           align-items: center;
-          gap: 0.75rem;
           border-top: 1px solid var(--border-color);
-          padding-top: 1.5rem;
-          margin-top: auto;
-        }
-
-        @media (min-width: 576px) {
-          .toggle-container {
-            flex-direction: row;
-            justify-content: space-between;
-          }
+          padding-top: 1.25rem;
+          margin-bottom: 1.5rem;
         }
 
         .toggle-label {
@@ -324,8 +655,8 @@ export const InteractiveOptics: React.FC = () => {
 
         .custom-toggle-btn {
           position: relative;
-          width: 200px;
-          height: 40px;
+          width: 180px;
+          height: 36px;
           border-radius: 9999px;
           border: none;
           cursor: pointer;
@@ -347,29 +678,70 @@ export const InteractiveOptics: React.FC = () => {
 
         .toggle-knob {
           position: absolute;
-          width: 32px;
-          height: 32px;
+          width: 28px;
+          height: 28px;
           border-radius: 50%;
           background-color: #ffffff;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+          box-shadow: 0 2px 5px rgba(0,0,0,0.15);
           top: 4px;
           transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .active-corrected .toggle-knob {
-          transform: translateX(80px);
+          transform: translateX(70px);
         }
 
         .active-blurry .toggle-knob {
-          transform: translateX(-80px);
+          transform: translateX(-70px);
         }
 
         .toggle-text-inside {
-          font-size: 0.85rem;
+          font-size: 0.8rem;
           font-weight: 700;
           color: #ffffff;
           z-index: 10;
           font-family: var(--font-friendly);
+        }
+
+        /* Blurry Vision Text Box */
+        .text-blur-simulation-box {
+          background: var(--bg-primary);
+          padding: 1.25rem;
+          border-radius: 16px;
+          border: 1px solid var(--border-color);
+          text-align: left;
+        }
+
+        .sim-title-text {
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          margin-bottom: 0.5rem;
+          letter-spacing: 0.05em;
+        }
+
+        .simulation-screen {
+          background: #ffffff;
+          padding: 1rem;
+          border-radius: 10px;
+          border: 1px solid var(--border-color);
+          min-height: 80px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        [data-theme='dark'] .simulation-screen {
+          background: #fdfaf2;
+        }
+
+        .sim-blurred-text {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: #111111;
+          text-align: center;
+          line-height: 1.5;
         }
 
         /* Result Panel */
@@ -381,60 +753,79 @@ export const InteractiveOptics: React.FC = () => {
           border-radius: 24px;
         }
 
-        .vision-screen-wrapper {
-          width: 100%;
-          background: #ffffff;
-          border: 4px solid var(--text-primary);
-          border-radius: 20px;
-          padding: 1.5rem;
-          margin-bottom: 2rem;
-          box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+        .three-lab-header {
           display: flex;
-          justify-content: center;
+          justify-content: space-between;
           align-items: center;
-          min-height: 140px;
-        }
-
-        [data-theme='dark'] .vision-screen-wrapper {
-          background: #faf7f2; /* keep visual chart contrast for realism */
-        }
-
-        .vision-scene {
           width: 100%;
-          text-align: center;
+          margin-bottom: 1rem;
         }
 
-        .vision-content {
-          color: #111111;
+        .view-presets {
+          display: flex;
+          gap: 0.4rem;
         }
 
-        .vision-large-text {
-          font-size: 2.25rem;
-          font-weight: 900;
-          letter-spacing: 0.15em;
-          line-height: 1.1;
+        .preset-btn {
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          background: var(--bg-primary);
+          border: 1px solid var(--border-color);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-secondary);
+          transition: all var(--transition-fast);
         }
 
-        .vision-medium-text {
-          font-size: 1.25rem;
+        .preset-btn:hover {
+          border-color: var(--accent-pink);
+          color: var(--accent-pink);
+          transform: translateY(-1px);
+        }
+
+        .canvas-wrapper-container {
+          position: relative;
+          width: 100%;
+          background: var(--bg-primary);
+          border-radius: 20px;
+          border: 1.5px solid var(--border-color);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 1.5rem;
+          margin-bottom: 1.5rem;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .three-canvas {
+          cursor: grab;
+          width: 100%;
+          max-width: 350px;
+          height: auto;
+          aspect-ratio: 1 / 1;
+          border-radius: 16px;
+        }
+
+        .three-canvas:active {
+          cursor: grabbing;
+        }
+
+        .drag-hint {
+          font-size: 0.8rem;
           font-weight: 700;
-          letter-spacing: 0.05em;
-          margin-bottom: 0.5rem;
-        }
-
-        .vision-small-text {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: #555555;
+          color: var(--text-muted);
+          margin-top: 0.5rem;
+          pointer-events: none;
         }
 
         /* Prescription Analysis Output */
         .prescription-analysis {
           text-align: left;
           flex-grow: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
         }
 
         .analysis-empty {
@@ -490,10 +881,9 @@ export const InteractiveOptics: React.FC = () => {
 
         /* Hira Recommendation Card */
         .hira-rec-card {
-          margin-top: 1rem;
           background: var(--bg-tertiary);
           border-radius: 20px;
-          padding: 1.5rem;
+          padding: 1.25rem;
           border: 1.5px solid var(--border-color);
         }
 

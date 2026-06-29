@@ -116,6 +116,13 @@ export const About: React.FC = () => {
           margin-bottom: 1.5rem;
         }
 
+        @media (max-width: 480px) {
+          .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+          }
+        }
+
         .stat-card {
           padding: 1.5rem 1.25rem;
           text-align: center;
@@ -156,6 +163,14 @@ export const About: React.FC = () => {
           padding: 1.5rem;
           background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-tertiary) 100%);
           border-radius: 20px;
+        }
+
+        @media (max-width: 480px) {
+          .lens-graphic-card {
+            flex-direction: column;
+            text-align: center;
+            padding: 1.25rem;
+          }
         }
 
         .lens-circle {
