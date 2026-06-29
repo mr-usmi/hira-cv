@@ -40,25 +40,29 @@ interface Translations {
   
   interactiveTitle: string;
   interactiveSubtitle: string;
-  faceShapePrompt: string;
-  faceRound: string;
-  faceOval: string;
-  faceSquare: string;
-  faceHeart: string;
-  recHeading: string;
-  tryonHeading: string;
-  tryonSub: string;
-  
-  recRound: string;
-  recOval: string;
-  recSquare: string;
-  recHeart: string;
-  
-  frameNone: string;
-  frameCatEye: string;
-  frameRound: string;
-  frameSquare: string;
-  frameFlower: string;
+  prescriptionDecoderTitle: string;
+  prescriptionDecoderSubtitle: string;
+  sphLabel: string;
+  cylLabel: string;
+  sphHelp: string;
+  cylHelp: string;
+  decodeBtn: string;
+  myopiaTitle: string;
+  hyperopiaTitle: string;
+  astigmatismTitle: string;
+  normalVisionTitle: string;
+  sphExplainNeg: string;
+  sphExplainPos: string;
+  cylExplain: string;
+  hiraRecommendation: string;
+  recThinning: string;
+  recStandard: string;
+  recBlueLight: string;
+  recAntiReflective: string;
+  applyCorrection: string;
+  simulateVision: string;
+  viewCorrectedText: string;
+  viewBlurryText: string;
   
   eduTitle: string;
   eduSubtitle: string;
@@ -150,7 +154,7 @@ export const translations: Record<Language, Translations> = {
     navAbout: 'Sobre Mí',
     navSkills: 'Especialidades',
     navExperience: 'Experiencia',
-    navInteractive: 'Probador Cuqui',
+    navInteractive: 'Decodificador',
     navEducation: 'Formación',
     navContact: 'Contacto',
     
@@ -181,27 +185,31 @@ export const translations: Record<Language, Translations> = {
     expSubtitle: 'Mi dulce camino en gabinetes universitarios, talleres de óptica y atención clínica.',
     expPresent: 'Actualidad',
     
-    interactiveTitle: 'Estilo de Gafas Cutiepie 👓',
-    interactiveSubtitle: '¿Quieres saber qué montura te favorece más? Elige tu tipo de rostro y pruébaselas a Hira.',
-    faceShapePrompt: '¿Cómo es la forma de tu rostro?',
-    faceRound: '🌸 Redondo',
-    faceOval: '🌟 Ovalado',
-    faceSquare: '🎀 Cuadrado',
-    faceHeart: '💖 Corazón',
-    recHeading: 'Recomendación Cuqui:',
-    tryonHeading: 'Probador de Gafas',
-    tryonSub: '¡Mira qué bien le sientan las monturas a Hira!',
-    
-    recRound: '¡Las monturas Cat-Eye rosa te darán un toque súper chic y alegre! Rompen las líneas redondeadas de forma muy dulce y estilizan tus ojitos.',
-    recOval: '¡Tienes suerte, te queda bien casi todo! Unas monturas Hipster Negro te darán un aire intelectual, adorable y con mucha personalidad.',
-    recSquare: '¡Las monturas Retro Dorado suavizan tus facciones cuadradas con un brillo mágico y vintage súper cuqui!',
-    recHeart: '¡Prueba las monturas Flor Alegre! Equilibran la parte superior del rostro con pura diversión, color y pétalos rosas.',
-    
-    frameNone: 'Sin Gafas',
-    frameCatEye: 'Cat-Eye Rosa 🌸',
-    frameRound: 'Retro Dorado 🌟',
-    frameSquare: 'Hipster Negro 🎀',
-    frameFlower: 'Flor Alegre 💖',
+    interactiveTitle: 'Decodificador de Receta Visual 👓',
+    interactiveSubtitle: '¿Tienes dudas sobre los números de tu receta de gafas? Configura los deslizadores y te explico qué significan con consejos de salud visual personalizados.',
+    prescriptionDecoderTitle: 'Traductor de Graduación Ocular',
+    prescriptionDecoderSubtitle: 'Mueve los valores de Esfera y Cilindro para ver qué significan de forma súper clara.',
+    sphLabel: 'Esfera (SPH) - Distancia',
+    cylLabel: 'Cilindro (CYL) - Astigmatismo',
+    sphHelp: 'Negativo (-) para Miopía (ver mal de lejos) | Positivo (+) para Hipermetropía (ver mal de cerca).',
+    cylHelp: 'Representa el Astigmatismo (los objetos se ven con bordes borrosos o distorsionados).',
+    decodeBtn: 'Traducir Receta',
+    myopiaTitle: 'Miopía 🌸',
+    hyperopiaTitle: 'Hipermetropía 🌟',
+    astigmatismTitle: 'Astigmatismo 🎀',
+    normalVisionTitle: 'Visión Normal 💖',
+    sphExplainNeg: 'Tienes dificultades para ver los objetos lejanos. Cuanto más negativo es el número, más borrosidad experimentas de lejos.',
+    sphExplainPos: 'Tus ojitos tienen que hacer un esfuerzo extra para enfocar de cerca, lo que puede provocar fatiga visual al leer o usar pantallas.',
+    cylExplain: 'La córnea de tu ojo tiene una forma ovalada en lugar de redonda. Esto hace que los contornos y detalles se vean un poco distorsionados a cualquier distancia.',
+    hiraRecommendation: 'Recomendación de Hira:',
+    recThinning: 'Al tener una graduación moderada/alta, te aconsejo usar lentes reducidas (índice 1.6 o superior) para que tus gafas queden finas, ligeras y muy bonitas.',
+    recStandard: 'Tus lentes serán muy ligeras y finas de forma natural con el índice estándar.',
+    recBlueLight: '¡Te recomiendo el filtro de luz azul (Blue Cut) si pasas más de 3 horas al día con el móvil u ordenadores para evitar la fatiga visual!',
+    recAntiReflective: 'Un buen tratamiento antirreflejante eliminará destellos y te ayudará a tener una visión más cómoda, especialmente conduciendo de noche.',
+    applyCorrection: 'Aplicar lentes correctoras de Hira',
+    simulateVision: 'Ver simulación de visión borrosa',
+    viewCorrectedText: 'Visión con Gafas (Graduación Correctora)',
+    viewBlurryText: 'Visión sin Gafas (Graduación Simulada)',
     
     eduTitle: 'Educación y Formación',
     eduSubtitle: 'Mi formación en la UPC y mis especialidades más queridas.',
@@ -226,7 +234,7 @@ export const translations: Record<Language, Translations> = {
     contactCallBtn: 'Llamar',
     
     aboutHighlightText: 'Especialista en refracción clínica, lentes de contacto y asesoramiento de monturas personalizadas.',
-    aboutHighlight1Title: 'Refracción de Precisión',
+    aboutHighlight1Title: 'Precision Refraction',
     aboutHighlight1Desc: 'Exámenes detallados para compensar miopía, hipermetropía, astigmatismo y presbicia con mucho mimo.',
     aboutHighlight2Title: 'Taller y Montaje',
     aboutHighlight2Desc: 'Corte, biselado y montaje de lentes en todo tipo de monturas en el laboratorio clínico.',
@@ -314,7 +322,7 @@ export const translations: Record<Language, Translations> = {
     navAbout: 'About Me',
     navSkills: 'Specialties',
     navExperience: 'Experience',
-    navInteractive: 'Cute Try-On',
+    navInteractive: 'Decoder',
     navEducation: 'Education',
     navContact: 'Contact',
     
@@ -345,27 +353,31 @@ export const translations: Record<Language, Translations> = {
     expSubtitle: 'My sweet journey in university clinics, optical workshops, and clinical care.',
     expPresent: 'Present',
     
-    interactiveTitle: 'Cutiepie Glasses Finder 👓',
-    interactiveSubtitle: 'Want to know which frames fit you best? Choose your face shape and try them on Hira!',
-    faceShapePrompt: 'What is your face shape?',
-    faceRound: '🌸 Round',
-    faceOval: '🌟 Oval',
-    faceSquare: '🎀 Square',
-    faceHeart: '💖 Heart',
-    recHeading: 'Cute Recommendation:',
-    tryonHeading: 'Glasses Try-On',
-    tryonSub: 'Look how pretty Hira looks in these frames!',
-    
-    recRound: 'Pink Cat-Eye frames will give you a super chic and cheerful touch! They softly break up round lines and make your eyes look beautiful.',
-    recOval: 'You are in luck, almost everything fits you! Black Hipster frames will give you an intellectual, adorable look with lots of personality.',
-    recSquare: 'Retro Gold frames soften your square features with a magical, vintage, and super cute glow!',
-    recHeart: 'Try the Floral Fun frames! They balance the upper part of your face with pure fun, color, and pink petals.',
-    
-    frameNone: 'No Glasses',
-    frameCatEye: 'Pink Cat-Eye 🌸',
-    frameRound: 'Retro Gold 🌟',
-    frameSquare: 'Black Hipster 🎀',
-    frameFlower: 'Floral Fun 💖',
+    interactiveTitle: 'Visual Prescription Decoder 👓',
+    interactiveSubtitle: 'Have doubts about the numbers on your glasses prescription? Adjust the sliders and let me explain what they mean with personalized visual health tips.',
+    prescriptionDecoderTitle: 'Eye Prescription Translator',
+    prescriptionDecoderSubtitle: 'Adjust the Sphere and Cylinder values to see what they mean clearly.',
+    sphLabel: 'Sphere (SPH) - Distance',
+    cylLabel: 'Cylinder (CYL) - Astigmatism',
+    sphHelp: 'Negative (-) for Nearsightedness (poor far vision) | Positive (+) for Farsightedness (poor near vision).',
+    cylHelp: 'Represents Astigmatism (objects appear with blurry or distorted edges).',
+    decodeBtn: 'Translate Prescription',
+    myopiaTitle: 'Nearsightedness 🌸',
+    hyperopiaTitle: 'Farsightedness 🌟',
+    astigmatismTitle: 'Astigmatism 🎀',
+    normalVisionTitle: 'Normal Vision 💖',
+    sphExplainNeg: 'You have difficulty seeing distant objects clearly. The more negative the number, the more blurriness you experience in the distance.',
+    sphExplainPos: 'Your eyes have to make an extra effort to focus up close, which can lead to eye strain when reading or looking at screens.',
+    cylExplain: 'Your eye\'s cornea has an oval shape instead of round. This causes outlines and details to look slightly distorted at any distance.',
+    hiraRecommendation: 'Hira\'s Recommendation:',
+    recThinning: 'Since you have a moderate/high prescription, Hira recommends using thinned lenses (index 1.6 or higher) so your glasses remain slim, light, and beautiful.',
+    recStandard: 'Your lenses will naturally be light and thin with the standard index.',
+    recBlueLight: 'I recommend a blue light filter (Blue Cut) if you spend more than 3 hours a day on phones or computers to prevent eye fatigue!',
+    recAntiReflective: 'A high-end anti-reflective coating will eliminate glare and help you have more comfortable vision, especially when driving at night.',
+    applyCorrection: 'Apply Hira\'s corrective lenses',
+    simulateVision: 'See simulated blurry vision',
+    viewCorrectedText: 'Vision with Glasses (Corrected)',
+    viewBlurryText: 'Vision without Glasses (Simulated)',
     
     eduTitle: 'Education & Training',
     eduSubtitle: 'My training at UPC and my most beloved specialties.',

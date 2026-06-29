@@ -1,112 +1,38 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Sparkles, Glasses, Heart } from 'lucide-react';
-
-type FaceShape = 'round' | 'oval' | 'square' | 'heart';
-type FrameId = 'none' | 'cateye' | 'round' | 'square' | 'flower';
+import { Eye, Sparkles, AlertCircle, Sparkle } from 'lucide-react';
 
 export const InteractiveOptics: React.FC = () => {
   const { t } = useLanguage();
-  const [selectedShape, setSelectedShape] = useState<FaceShape>('round');
-  const [selectedFrame, setSelectedFrame] = useState<FrameId>('cateye');
+  const [sph, setSph] = useState<number>(0);
+  const [cyl, setCyl] = useState<number>(0);
+  const [isCorrected, setIsCorrected] = useState<boolean>(true);
 
-  // Frames data and SVGs
-  const frames = [
-    { 
-      id: 'none' as FrameId, 
-      label: t.frameNone,
-      color: 'var(--text-muted)',
-      svg: null 
-    },
-    { 
-      id: 'cateye' as FrameId, 
-      label: t.frameCatEye,
-      color: '#ec4899',
-      svg: (
-        <svg viewBox="0 0 200 60" fill="none" stroke="currentColor" strokeWidth="4">
-          <path d="M10,20 C10,20 40,5 75,20 C75,20 85,50 45,50 C15,50 10,20 10,20 Z" stroke="#ec4899" fill="rgba(236,72,153,0.15)" />
-          <path d="M190,20 C190,20 160,5 125,20 C125,20 115,50 155,50 C185,50 190,20 190,20 Z" stroke="#ec4899" fill="rgba(236,72,153,0.15)" />
-          <path d="M75,22 C85,15 115,15 125,22" stroke="#ec4899" />
-          <path d="M10,20 L2,10 L15,12 Z" fill="#ec4899" stroke="none" />
-          <path d="M190,20 L198,10 L185,12 Z" fill="#ec4899" stroke="none" />
-        </svg>
-      )
-    },
-    { 
-      id: 'round' as FrameId, 
-      label: t.frameRound,
-      color: '#fbbf24',
-      svg: (
-        <svg viewBox="0 0 200 60" fill="none" stroke="currentColor" strokeWidth="3">
-          <circle cx="45" cy="30" r="24" stroke="#fbbf24" fill="rgba(250,204,21,0.1)" />
-          <circle cx="155" cy="30" r="24" stroke="#fbbf24" fill="rgba(250,204,21,0.1)" />
-          <path d="M69,30 C79,22 121,22 131,30" stroke="#fbbf24" />
-          <path d="M21,30 L10,30" stroke="#fbbf24" />
-          <path d="M179,30 L190,30" stroke="#fbbf24" />
-        </svg>
-      )
-    },
-    { 
-      id: 'square' as FrameId, 
-      label: t.frameSquare,
-      color: '#1f2937',
-      svg: (
-        <svg viewBox="0 0 200 60" fill="none" stroke="currentColor" strokeWidth="5">
-          <rect x="15" y="10" width="60" height="40" rx="8" stroke="#1f2937" fill="rgba(31,41,55,0.1)" />
-          <rect x="125" y="10" width="60" height="40" rx="8" stroke="#1f2937" fill="rgba(31,41,55,0.1)" />
-          <path d="M75,22 L125,22" stroke="#1f2937" />
-        </svg>
-      )
-    },
-    { 
-      id: 'flower' as FrameId, 
-      label: t.frameFlower,
-      color: '#f472b6',
-      svg: (
-        <svg viewBox="0 0 200 60" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="45" cy="30" r="16" stroke="#f472b6" fill="rgba(244,114,182,0.2)" strokeWidth="3" />
-          <circle cx="45" cy="10" r="5" fill="#f472b6" stroke="none" />
-          <circle cx="45" cy="50" r="5" fill="#f472b6" stroke="none" />
-          <circle cx="25" cy="30" r="5" fill="#f472b6" stroke="none" />
-          <circle cx="65" cy="30" r="5" fill="#f472b6" stroke="none" />
-          <circle cx="31" cy="16" r="5" fill="#facc15" stroke="none" />
-          <circle cx="59" cy="44" r="5" fill="#facc15" stroke="none" />
-          <circle cx="31" cy="44" r="5" fill="#facc15" stroke="none" />
-          <circle cx="59" cy="16" r="5" fill="#facc15" stroke="none" />
-          <circle cx="155" cy="30" r="16" stroke="#f472b6" fill="rgba(244,114,182,0.2)" strokeWidth="3" />
-          <circle cx="155" cy="10" r="5" fill="#f472b6" stroke="none" />
-          <circle cx="155" cy="50" r="5" fill="#f472b6" stroke="none" />
-          <circle cx="135" cy="30" r="5" fill="#f472b6" stroke="none" />
-          <circle cx="175" cy="30" r="5" fill="#f472b6" stroke="none" />
-          <circle cx="141" cy="16" r="5" fill="#facc15" stroke="none" />
-          <circle cx="169" cy="44" r="5" fill="#facc15" stroke="none" />
-          <circle cx="141" cy="44" r="5" fill="#facc15" stroke="none" />
-          <circle cx="169" cy="16" r="5" fill="#facc15" stroke="none" />
-          <path d="M69,30 C79,25 121,25 131,30" stroke="#f472b6" strokeWidth="4" />
-        </svg>
-      )
-    }
-  ];
-
-  // Face shapes list
-  const faceShapes = [
-    { id: 'round' as FaceShape, label: t.faceRound, matchingFrame: 'cateye' as FrameId, rec: t.recRound },
-    { id: 'oval' as FaceShape, label: t.faceOval, matchingFrame: 'square' as FrameId, rec: t.recOval },
-    { id: 'square' as FaceShape, label: t.faceSquare, matchingFrame: 'round' as FrameId, rec: t.recSquare },
-    { id: 'heart' as FaceShape, label: t.faceHeart, matchingFrame: 'flower' as FrameId, rec: t.recHeart },
-  ];
-
-  const handleShapeSelect = (shapeId: FaceShape, matchingFrame: FrameId) => {
-    setSelectedShape(shapeId);
-    setSelectedFrame(matchingFrame);
+  // Formatted string helper
+  const formatValue = (val: number) => {
+    if (val === 0) return '0.00';
+    return (val > 0 ? '+' : '') + val.toFixed(2);
   };
 
-  const activeShapeData = faceShapes.find(s => s.id === selectedShape);
+  // Determine simulated blur level (CSS blur px)
+  const getBlurValue = () => {
+    if (isCorrected) return 0;
+    
+    // Calculate blur based on absolute values of SPH and CYL
+    const totalAmetropia = Math.abs(sph) + Math.abs(cyl) * 0.8;
+    if (totalAmetropia === 0) return 0;
+    
+    // Scale blur between 1px and 12px
+    return Math.min(12, 1 + totalAmetropia * 1.8);
+  };
+
+  // Check if we need thinning
+  const needsThinning = Math.abs(sph) > 3.00 || Math.abs(cyl) > 2.00;
 
   return (
     <section id="interactive" className="interactive-section">
       <div className="bg-glow-pink"></div>
-      <div className="bg-glow-gold"></div>
+      <div className="bg-glow-teal"></div>
 
       <div className="container interactive-container">
         <div className="section-header">
@@ -115,75 +41,145 @@ export const InteractiveOptics: React.FC = () => {
         </div>
 
         <div className="grid-2 interactive-grid">
-          {/* Left Panel: Recommendations & Face Shapes */}
-          <div className="shape-finder-panel glass-card">
+          {/* Left Panel: Sliders & Controls */}
+          <div className="control-panel glass-card">
             <h3 className="interactive-card-title">
-              <Heart size={22} className="card-title-icon pink-color" />
-              {t.faceShapePrompt}
+              <Sparkle size={20} className="card-title-icon pink-color" />
+              {t.prescriptionDecoderTitle}
             </h3>
+            <p className="interactive-card-sub">{t.prescriptionDecoderSubtitle}</p>
 
-            <div className="shape-selectors-grid">
-              {faceShapes.map((shape) => (
-                <button
-                  key={shape.id}
-                  onClick={() => handleShapeSelect(shape.id, shape.matchingFrame)}
-                  className={`shape-select-btn ${selectedShape === shape.id ? 'active' : ''}`}
-                >
-                  {shape.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Recommendation Box */}
-            <div className="recommendation-box">
-              <h4 className="rec-box-title">
-                <Sparkles size={16} className="rec-title-icon" />
-                {t.recHeading}
-              </h4>
-              <p className="rec-text">{activeShapeData?.rec}</p>
-            </div>
-            
-            {/* Try-on manual overrides */}
-            <div className="manual-frame-override">
-              <h4 className="override-title">{t.tryonHeading}:</h4>
-              <div className="override-btns">
-                {frames.map((frame) => (
-                  <button
-                    key={frame.id}
-                    onClick={() => setSelectedFrame(frame.id)}
-                    className={`override-select-btn ${selectedFrame === frame.id ? 'active' : ''}`}
-                    style={{ borderColor: frame.color }}
-                  >
-                    {frame.label}
-                  </button>
-                ))}
+            <div className="sliders-container">
+              {/* SPH Slider */}
+              <div className="slider-group">
+                <div className="slider-header">
+                  <label className="slider-label">{t.sphLabel}</label>
+                  <span className="slider-value-badge" style={{ backgroundColor: sph === 0 ? 'var(--text-muted)' : sph > 0 ? 'var(--accent-peach)' : 'var(--accent-pink)' }}>
+                    {formatValue(sph)} Dioptrías
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="-6.00"
+                  max="6.00"
+                  step="0.25"
+                  value={sph}
+                  onChange={(e) => setSph(parseFloat(e.target.value))}
+                  className="prescription-slider"
+                />
+                <p className="slider-help-text">{t.sphHelp}</p>
               </div>
+
+              {/* CYL Slider */}
+              <div className="slider-group">
+                <div className="slider-header">
+                  <label className="slider-label">{t.cylLabel}</label>
+                  <span className="slider-value-badge" style={{ backgroundColor: cyl === 0 ? 'var(--text-muted)' : 'var(--accent-teal)' }}>
+                    {formatValue(cyl)} Dioptrías
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="-4.00"
+                  max="0.00"
+                  step="0.25"
+                  value={cyl}
+                  onChange={(e) => setCyl(parseFloat(e.target.value))}
+                  className="prescription-slider"
+                />
+                <p className="slider-help-text">{t.cylHelp}</p>
+              </div>
+            </div>
+
+            {/* Simulated Toggle */}
+            <div className="toggle-container">
+              <span className="toggle-label">{t.simulateVision}</span>
+              <button 
+                onClick={() => setIsCorrected(!isCorrected)} 
+                className={`custom-toggle-btn ${isCorrected ? 'active-corrected' : 'active-blurry'}`}
+              >
+                <span className="toggle-knob"></span>
+                <span className="toggle-text-inside">
+                  {isCorrected ? t.applyCorrection.slice(0, 18) + '...' : t.simulateVision.slice(0, 18) + '...'}
+                </span>
+              </button>
             </div>
           </div>
 
-          {/* Right Panel: Try-On Portrait Visualizer */}
-          <div className="tryon-visualizer-panel glass-card">
+          {/* Right Panel: Translation Output & Simulated Vision Preview */}
+          <div className="result-panel glass-card">
             <h3 className="interactive-card-title">
-              <Glasses size={24} className="card-title-icon teal-color" />
-              {t.tryonHeading}
+              <Eye size={22} className="card-title-icon teal-color" />
+              {isCorrected ? t.viewCorrectedText : t.viewBlurryText}
             </h3>
-            <p className="interactive-card-sub">{t.tryonSub}</p>
 
-            <div className="tryon-canvas-container">
-              <div className="portrait-frame">
-                <img 
-                  src="/profile.png" 
-                  alt="Hira Portrait" 
-                  className="portrait-image" 
-                />
-                
-                {/* SVG Overlay Glasses */}
-                {selectedFrame !== 'none' && (
-                  <div className={`glasses-overlay-container overlay-${selectedFrame}`}>
-                    {frames.find(f => f.id === selectedFrame)?.svg}
-                  </div>
-                )}
+            {/* Simulated vision screen */}
+            <div className="vision-screen-wrapper">
+              <div 
+                className="vision-scene"
+                style={{ filter: `blur(${getBlurValue()}px)`, transition: 'filter 0.3s ease' }}
+              >
+                <div className="vision-content">
+                  <p className="vision-large-text">HIRA KHAN</p>
+                  <p className="vision-medium-text">Óptica Optometrista</p>
+                  <p className="vision-small-text">Cuidando de tu salud visual con mucho amor ✿</p>
+                </div>
               </div>
+            </div>
+
+            {/* Translation Output Details */}
+            <div className="prescription-analysis">
+              {sph === 0 && cyl === 0 ? (
+                <div className="analysis-empty">
+                  <AlertCircle size={20} className="empty-icon" />
+                  <p><strong>{t.normalVisionTitle}:</strong> ¡Felicidades! Tienes una visión perfecta y no necesitas corrección esférica o astigmática.</p>
+                </div>
+              ) : (
+                <div className="analysis-details">
+                  {/* Sphere details */}
+                  {sph !== 0 && (
+                    <div className="analysis-item">
+                      <div className="analysis-bullet" style={{ backgroundColor: sph > 0 ? 'var(--accent-peach)' : 'var(--accent-pink)' }}></div>
+                      <div className="analysis-text-wrapper">
+                        <span className="analysis-title">
+                          {sph > 0 ? t.hyperopiaTitle : t.myopiaTitle} ({formatValue(sph)} SPH):
+                        </span>
+                        <p className="analysis-desc">
+                          {sph > 0 ? t.sphExplainPos : t.sphExplainNeg}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Cylinder details */}
+                  {cyl !== 0 && (
+                    <div className="analysis-item">
+                      <div className="analysis-bullet" style={{ backgroundColor: 'var(--accent-teal)' }}></div>
+                      <div className="analysis-text-wrapper">
+                        <span className="analysis-title">
+                          {t.astigmatismTitle} ({formatValue(cyl)} CYL):
+                        </span>
+                        <p className="analysis-desc">{t.cylExplain}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recommendation Card */}
+                  <div className="hira-rec-card">
+                    <div className="hira-rec-header">
+                      <Sparkles size={16} className="hira-rec-icon" />
+                      <span>{t.hiraRecommendation}</span>
+                    </div>
+                    <ul className="hira-rec-list">
+                      <li>✿ {needsThinning ? t.recThinning : t.recStandard}</li>
+                      <li>✿ {t.recAntiReflective}</li>
+                      {Math.abs(sph) > 0.5 && (
+                        <li>✿ {t.recBlueLight}</li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -210,7 +206,7 @@ export const InteractiveOptics: React.FC = () => {
           display: flex;
           align-items: center;
           gap: 0.6rem;
-          margin-bottom: 1.25rem;
+          margin-bottom: 0.5rem;
           font-family: var(--font-friendly);
           color: var(--text-primary);
         }
@@ -218,8 +214,15 @@ export const InteractiveOptics: React.FC = () => {
         .pink-color { color: var(--accent-pink); }
         .teal-color { color: var(--accent-teal); }
 
-        /* Left Panel Style Finder */
-        .shape-finder-panel {
+        .interactive-card-sub {
+          font-size: 0.95rem;
+          color: var(--text-secondary);
+          margin-bottom: 2rem;
+          text-align: left;
+        }
+
+        /* Control Panel Sliders */
+        .control-panel {
           padding: 2.25rem;
           background: var(--bg-secondary);
           display: flex;
@@ -227,190 +230,302 @@ export const InteractiveOptics: React.FC = () => {
           border-radius: 24px;
         }
 
-        .shape-selectors-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 1rem;
-          margin-bottom: 1.75rem;
-        }
-
-        .shape-select-btn {
-          background: var(--bg-primary);
-          border: 2px solid var(--border-color);
-          color: var(--text-secondary);
-          padding: 0.8rem;
-          border-radius: 16px;
-          font-size: 0.95rem;
-          font-weight: 700;
-          cursor: pointer;
-          font-family: var(--font-friendly);
-          transition: all var(--transition-fast);
-          box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-        }
-
-        .shape-select-btn:hover {
-          transform: translateY(-2px);
-          border-color: var(--accent-pink);
-          color: var(--text-primary);
-        }
-
-        .shape-select-btn.active {
-          border-color: var(--accent-pink);
-          background-color: var(--bg-tertiary);
-          color: var(--accent-pink);
-          box-shadow: 0 6px 15px rgba(236, 72, 153, 0.12);
-        }
-
-        /* Recommendation Box */
-        .recommendation-box {
-          background: var(--bg-primary);
-          border-radius: 16px;
-          padding: 1.5rem;
-          border: 1px dashed var(--border-color);
-          text-align: left;
-          margin-bottom: 2rem;
-          flex-grow: 1;
-        }
-
-        .rec-box-title {
-          font-size: 1.05rem;
-          font-weight: 700;
-          color: var(--accent-pink);
-          margin-bottom: 0.5rem;
+        .sliders-container {
           display: flex;
+          flex-direction: column;
+          gap: 2rem;
+          margin-bottom: 2.5rem;
+        }
+
+        .slider-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.6rem;
+          text-align: left;
+        }
+
+        .slider-header {
+          display: flex;
+          justify-content: space-between;
           align-items: center;
-          gap: 0.4rem;
+        }
+
+        .slider-label {
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: var(--text-primary);
           font-family: var(--font-friendly);
         }
 
-        .rec-title-icon {
-          animation: spinPulse 3s linear infinite;
-        }
-
-        @keyframes spinPulse {
-          0%, 100% { transform: scale(1) rotate(0deg); }
-          50% { transform: scale(1.1) rotate(180deg); }
-        }
-
-        .rec-text {
-          font-size: 0.95rem;
-          color: var(--text-secondary);
-          line-height: 1.6;
-        }
-
-        /* Manual Override selectors */
-        .manual-frame-override {
-          border-top: 1px solid var(--border-color);
-          padding-top: 1.5rem;
-          text-align: left;
-        }
-
-        .override-title {
-          font-size: 0.9rem;
-          font-weight: 700;
-          color: var(--text-muted);
-          margin-bottom: 0.75rem;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .override-btns {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 0.5rem;
-        }
-
-        .override-select-btn {
-          background: var(--bg-primary);
-          border: 2px solid var(--border-color);
-          color: var(--text-secondary);
-          padding: 0.4rem 0.8rem;
-          border-radius: 9999px;
+        .slider-value-badge {
           font-size: 0.8rem;
           font-weight: 700;
+          color: #ffffff;
+          padding: 0.25rem 0.75rem;
+          border-radius: 9999px;
+        }
+
+        .prescription-slider {
+          -webkit-appearance: none;
+          width: 100%;
+          height: 8px;
+          border-radius: 5px;
+          background: var(--bg-tertiary);
+          outline: none;
+          margin: 10px 0;
+        }
+
+        .prescription-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: var(--accent-pink);
           cursor: pointer;
+          box-shadow: 0 2px 6px rgba(236, 72, 153, 0.4);
+          transition: transform 0.1s ease;
+        }
+
+        .prescription-slider::-webkit-slider-thumb:hover {
+          transform: scale(1.15);
+        }
+
+        .slider-help-text {
+          font-size: 0.8rem;
+          color: var(--text-muted);
+          line-height: 1.4;
+        }
+
+        /* Custom Toggle Switch */
+        .toggle-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.75rem;
+          border-top: 1px solid var(--border-color);
+          padding-top: 1.5rem;
+          margin-top: auto;
+        }
+
+        @media (min-width: 576px) {
+          .toggle-container {
+            flex-direction: row;
+            justify-content: space-between;
+          }
+        }
+
+        .toggle-label {
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: var(--text-secondary);
           font-family: var(--font-friendly);
-          transition: all var(--transition-fast);
         }
 
-        .override-select-btn:hover {
-          transform: translateY(-2px);
-          color: var(--text-primary);
+        .custom-toggle-btn {
+          position: relative;
+          width: 200px;
+          height: 40px;
+          border-radius: 9999px;
+          border: none;
+          cursor: pointer;
+          outline: none;
+          overflow: hidden;
+          transition: background-color 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        .override-select-btn.active {
-          background-color: var(--bg-tertiary);
-          color: var(--text-primary);
-          border-width: 2px;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        .active-corrected {
+          background-color: var(--accent-teal);
         }
 
-        /* Right Panel try-on */
-        .tryon-visualizer-panel {
+        .active-blurry {
+          background-color: var(--accent-pink);
+        }
+
+        .toggle-knob {
+          position: absolute;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background-color: #ffffff;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+          top: 4px;
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .active-corrected .toggle-knob {
+          transform: translateX(80px);
+        }
+
+        .active-blurry .toggle-knob {
+          transform: translateX(-80px);
+        }
+
+        .toggle-text-inside {
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: #ffffff;
+          z-index: 10;
+          font-family: var(--font-friendly);
+        }
+
+        /* Result Panel */
+        .result-panel {
           padding: 2.25rem;
           background: var(--bg-secondary);
           display: flex;
           flex-direction: column;
-          align-items: center;
           border-radius: 24px;
         }
 
-        .tryon-canvas-container {
-          flex: 1;
+        .vision-screen-wrapper {
+          width: 100%;
+          background: #ffffff;
+          border: 4px solid var(--text-primary);
+          border-radius: 20px;
+          padding: 1.5rem;
+          margin-bottom: 2rem;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
           display: flex;
           justify-content: center;
           align-items: center;
-          width: 100%;
-          min-height: 280px;
+          min-height: 140px;
         }
 
-        .portrait-frame {
-          position: relative;
-          width: 250px;
-          height: 250px;
+        [data-theme='dark'] .vision-screen-wrapper {
+          background: #faf7f2; /* keep visual chart contrast for realism */
+        }
+
+        .vision-scene {
+          width: 100%;
+          text-align: center;
+        }
+
+        .vision-content {
+          color: #111111;
+        }
+
+        .vision-large-text {
+          font-size: 2.25rem;
+          font-weight: 900;
+          letter-spacing: 0.15em;
+          line-height: 1.1;
+        }
+
+        .vision-medium-text {
+          font-size: 1.25rem;
+          font-weight: 700;
+          letter-spacing: 0.05em;
+          margin-bottom: 0.5rem;
+        }
+
+        .vision-small-text {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #555555;
+        }
+
+        /* Prescription Analysis Output */
+        .prescription-analysis {
+          text-align: left;
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+        }
+
+        .analysis-empty {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 1.25rem;
+          background: var(--bg-primary);
+          border-radius: 16px;
+          border: 1px solid var(--border-color);
+          font-size: 0.95rem;
+          color: var(--text-secondary);
+        }
+
+        .empty-icon {
+          color: var(--accent-teal);
+          flex-shrink: 0;
+        }
+
+        .analysis-details {
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+        }
+
+        .analysis-item {
+          display: flex;
+          gap: 0.75rem;
+          align-items: flex-start;
+        }
+
+        .analysis-bullet {
+          width: 12px;
+          height: 12px;
           border-radius: 50%;
-          overflow: hidden;
-          box-shadow: 0 15px 35px rgba(236,72,153,0.15);
-          border: 6px solid var(--bg-primary);
+          margin-top: 0.4rem;
+          flex-shrink: 0;
         }
 
-        .portrait-image {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          object-position: 50% 35%;
+        .analysis-text-wrapper {
+          font-size: 0.95rem;
+          color: var(--text-secondary);
+          line-height: 1.5;
         }
 
-        /* Glasses Overlay */
-        .glasses-overlay-container {
-          position: absolute;
-          width: 108px;
-          height: 32px;
-          left: 71px;
-          top: 89px;
-          pointer-events: none;
-          z-index: 100;
+        .analysis-title {
+          font-weight: 700;
+          color: var(--text-primary);
+          display: block;
+          margin-bottom: 0.15rem;
+          font-family: var(--font-friendly);
+        }
+
+        /* Hira Recommendation Card */
+        .hira-rec-card {
+          margin-top: 1rem;
+          background: var(--bg-tertiary);
+          border-radius: 20px;
+          padding: 1.5rem;
+          border: 1.5px solid var(--border-color);
+        }
+
+        .hira-rec-header {
           display: flex;
           align-items: center;
-          justify-content: center;
-          animation: applyGlasses 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+          gap: 0.5rem;
+          font-weight: 700;
+          color: var(--accent-pink);
+          font-size: 1.05rem;
+          margin-bottom: 0.75rem;
+          font-family: var(--font-friendly);
         }
 
-        @keyframes applyGlasses {
-          0% {
-            transform: scale(1.6) translateY(-20px);
-            opacity: 0;
-          }
-          100% {
-            transform: scale(1) translateY(0);
-            opacity: 1;
-          }
+        .hira-rec-icon {
+          animation: pulseEffect 2s infinite alternate;
         }
 
-        .overlay-cateye { width: 112px; left: 69px; top: 88px; }
-        .overlay-round { width: 110px; left: 70px; top: 87px; }
-        .overlay-square { width: 114px; left: 68px; top: 89px; }
-        .overlay-flower { width: 116px; left: 67px; top: 88px; }
+        @keyframes pulseEffect {
+          0% { transform: scale(1); }
+          100% { transform: scale(1.15); }
+        }
+
+        .hira-rec-list {
+          list-style: none;
+          display: flex;
+          flex-direction: column;
+          gap: 0.6rem;
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+          line-height: 1.5;
+        }
       `}</style>
     </section>
   );
