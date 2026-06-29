@@ -20,9 +20,10 @@ export const InteractiveOptics: React.FC = () => {
   const lensMeshRef = useRef<THREE.Mesh | null>(null);
   const originalPositionsRef = useRef<Float32Array | null>(null);
   const raysGroupRef = useRef<THREE.Group | null>(null);
+  const retinaMeshRef = useRef<THREE.Mesh | null>(null);
   
-  // Rotation / Drag Interaction State
-  const [rotation, setRotation] = useState({ x: 0.2, y: -0.6 });
+  // Rotation / Drag Interaction State via Ref to prevent stale closures in requestAnimationFrame
+  const rotationRef = useRef({ x: 0.2, y: -0.6 });
   const isDragging = useRef(false);
   const previousMousePosition = useRef({ x: 0, y: 0 });
 
@@ -37,10 +38,8 @@ export const InteractiveOptics: React.FC = () => {
     const deltaX = e.clientX - previousMousePosition.current.x;
     const deltaY = e.clientY - previousMousePosition.current.y;
     
-    setRotation(prev => ({
-      x: prev.x + deltaY * 0.01,
-      y: prev.y + deltaX * 0.01
-    }));
+    rotationRef.current.x += deltaY * 0.01;
+    rotationRef.current.y += deltaX * 0.01;
     
     previousMousePosition.current = { x: e.clientX, y: e.clientY };
   };
@@ -62,10 +61,8 @@ export const InteractiveOptics: React.FC = () => {
     const deltaX = e.touches[0].clientX - previousMousePosition.current.x;
     const deltaY = e.touches[0].clientY - previousMousePosition.current.y;
     
-    setRotation(prev => ({
-      x: prev.x + deltaY * 0.01,
-      y: prev.y + deltaX * 0.01
-    }));
+    rotationRef.current.x += deltaY * 0.015;
+    rotationRef.current.y += deltaX * 0.015;
     
     previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   };
@@ -73,11 +70,11 @@ export const InteractiveOptics: React.FC = () => {
   // Preset Views
   const setView = (view: 'profile' | 'front' | 'angled') => {
     if (view === 'profile') {
-      setRotation({ x: 0, y: Math.PI / 2 });
+      rotationRef.current = { x: 0, y: Math.PI / 2 };
     } else if (view === 'front') {
-      setRotation({ x: 0, y: 0 });
+      rotationRef.current = { x: 0, y: 0 };
     } else {
-      setRotation({ x: 0.2, y: -0.6 });
+      rotationRef.current = { x: 0.2, y: -0.6 };
     }
   };
 
@@ -148,8 +145,9 @@ export const InteractiveOptics: React.FC = () => {
     const retinaGeo = new THREE.RingGeometry(1.4, 1.5, 32);
     const retinaMat = new THREE.MeshBasicMaterial({ color: 0x0d9488, side: THREE.DoubleSide, opacity: 0.4, transparent: true });
     const retinaMesh = new THREE.Mesh(retinaGeo, retinaMat);
-    retinaMesh.position.set(0, 0, 3); // Position on the right side
+    retinaMesh.position.set(0, 0, 3);
     scene.add(retinaMesh);
+    retinaMeshRef.current = retinaMesh;
 
     // 7. Ray Group Container
     const raysGroup = new THREE.Group();
@@ -180,15 +178,16 @@ export const InteractiveOptics: React.FC = () => {
     // Animation loop
     let animationFrameId: number;
     const animate = () => {
-      if (lensMeshRef.current) {
-        lensMeshRef.current.rotation.x = rotation.x;
-        lensMeshRef.current.rotation.y = rotation.y;
+      if (lensMeshRef.current && retinaMeshRef.current && raysGroupRef.current) {
+        // Read directly from rotationRef to resolve the stale closure bug!
+        lensMeshRef.current.rotation.x = rotationRef.current.x;
+        lensMeshRef.current.rotation.y = rotationRef.current.y;
         
-        retinaMesh.rotation.x = rotation.x;
-        retinaMesh.rotation.y = rotation.y;
+        retinaMeshRef.current.rotation.x = rotationRef.current.x;
+        retinaMeshRef.current.rotation.y = rotationRef.current.y;
         
-        raysGroup.rotation.x = rotation.x;
-        raysGroup.rotation.y = rotation.y;
+        raysGroupRef.current.rotation.x = rotationRef.current.x;
+        raysGroupRef.current.rotation.y = rotationRef.current.y;
       }
 
       renderer.render(scene, camera);
